@@ -1,8 +1,12 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:new_packers_application/lib/constant/app_formatter.dart';
 import '../../models/ShiftData.dart';
+import '../../views/ACServicesScreen.dart' as AppColor;
 import '../../views/ServiceSelectionScreen.dart';
 import '../../views/YourFinalScreen.dart';
 import 'map_picker_screen.dart';
@@ -29,9 +33,9 @@ class LocationSelectionScreen extends StatefulWidget {
 
 class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
   final TextEditingController _sourceLocalityController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController _destinationLocalityController =
-  TextEditingController();
+      TextEditingController();
   bool _normalLiftSource = false;
   bool _serviceLiftSource = false;
   int _floorSource = 0;
@@ -87,8 +91,12 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
     );
     if (picked != null) {
       setState(() {
-        selectedDate = '${picked.day}/${picked.month}/${picked.year}';
-        widget.shiftData.selectedDate = selectedDate;
+        selectedDate = AppFormatter.dateFormater(
+          date: picked.toIso8601String().split('T').first,
+        );
+        widget.shiftData.selectedDate = AppFormatter.dateFormater(
+          date: picked.toIso8601String().split('T').first,
+        );
       });
     }
   }
@@ -121,6 +129,11 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool hasBanner = widget.shiftData.categoryBannerImg != null &&
+        widget.shiftData.categoryBannerImg!.isNotEmpty;
+    bool hasDescription = widget.shiftData.categoryDesc != null &&
+        widget.shiftData.categoryDesc!.isNotEmpty;
+    bool showBannerSection = hasBanner || hasDescription;
     return Scaffold(
       backgroundColor: whiteColor,
       appBar: AppBar(
@@ -148,6 +161,54 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (showBannerSection)
+                    Container(
+                      padding: const EdgeInsets.all(0.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (hasBanner)
+                            Container(
+                              height: 150,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: AppColor.lightBlue,
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: FadeInImage.assetNetwork(
+                                  placeholder: 'assets/parcelwala4.jpg',
+                                  image:
+                                      'https://54kidsstreet.org/admin_assets/category_banner_img/${widget.shiftData.categoryBannerImg}',
+                                  fit: BoxFit.cover,
+                                  imageErrorBuilder:
+                                      (context, error, stackTrace) {
+                                    return Image.asset(
+                                      'assets/parcelwala4.jpg',
+                                      fit: BoxFit.cover,
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          if (hasBanner && hasDescription)
+                            const SizedBox(height: 8),
+                          if (hasDescription)
+                            Text(
+                              widget.shiftData.categoryDesc!,
+                              style: const TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
                   const Text(
                     'When to shift?',
                     style: TextStyle(
@@ -195,7 +256,8 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                           items: timeSlots.map((String time) {
                             return DropdownMenuItem<String>(
                               value: time,
-                              child: Text(time, overflow: TextOverflow.ellipsis),
+                              child:
+                                  Text(time, overflow: TextOverflow.ellipsis),
                             );
                           }).toList(),
                           onChanged: (String? newValue) {
@@ -213,10 +275,9 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                   const SizedBox(height: 24),
                   const Divider(),
                   const SizedBox(height: 16),
-
                   const Text('Source',
                       style:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   const Text('Locality'),
                   const SizedBox(height: 4),
@@ -233,7 +294,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                       ),
                       hintText: 'Tap to select source location',
                       suffixIcon:
-                      const Icon(Icons.location_on, color: mediumBlue),
+                          const Icon(Icons.location_on, color: mediumBlue),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -271,9 +332,10 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                                 color: mediumBlue),
                             onPressed: _floorSource > 0
                                 ? () => setState(() {
-                              _floorSource--;
-                              widget.shiftData.floorSource = _floorSource;
-                            })
+                                      _floorSource--;
+                                      widget.shiftData.floorSource =
+                                          _floorSource;
+                                    })
                                 : null,
                           ),
                           Container(
@@ -300,10 +362,9 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                   const SizedBox(height: 24),
                   const Divider(),
                   const SizedBox(height: 16),
-
                   const Text('Destination',
                       style:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   const Text('Locality'),
                   const SizedBox(height: 4),
@@ -320,7 +381,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                       ),
                       hintText: 'Tap to select destination location',
                       suffixIcon:
-                      const Icon(Icons.location_on, color: mediumBlue),
+                          const Icon(Icons.location_on, color: mediumBlue),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -358,9 +419,10 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                                 color: mediumBlue),
                             onPressed: _floorDestination > 0
                                 ? () => setState(() {
-                              _floorDestination--;
-                              widget.shiftData.floorDestination = _floorDestination;
-                            })
+                                      _floorDestination--;
+                                      widget.shiftData.floorDestination =
+                                          _floorDestination;
+                                    })
                                 : null,
                           ),
                           Container(
@@ -377,7 +439,8 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                                 color: mediumBlue),
                             onPressed: () => setState(() {
                               _floorDestination++;
-                              widget.shiftData.floorDestination = _floorDestination;
+                              widget.shiftData.floorDestination =
+                                  _floorDestination;
                             }),
                           ),
                         ],
@@ -389,7 +452,6 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
               ),
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: SizedBox(
@@ -432,8 +494,8 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                           subCategoryId: widget.shiftData.subCategoryId ?? 0,
                           subCategoryName: widget.shiftData.serviceName,
                           customerId: widget.shiftData.customerId,
-                          categoryBannerImg: widget.shiftData.categoryBannerImg,
-                          categoryDesc: widget.shiftData.categoryDesc,
+                          // categoryBannerImg: widget.shiftData.categoryBannerImg,
+                          // categoryDesc: widget.shiftData.categoryDesc,
                           shiftData: widget.shiftData,
                         ),
                       ),

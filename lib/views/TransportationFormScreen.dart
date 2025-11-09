@@ -33,7 +33,8 @@ class TransportationFormScreen extends StatefulWidget {
   });
 
   @override
-  State<TransportationFormScreen> createState() => _TransportationFormScreenState();
+  State<TransportationFormScreen> createState() =>
+      _TransportationFormScreenState();
 }
 
 class _TransportationFormScreenState extends State<TransportationFormScreen> {
@@ -120,14 +121,18 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
     if (result != null && result is Map) {
       setState(() {
         if (type == 'pickup') {
-          _pickupLocationController.text = result['address'] ?? 'Unknown location';
+          _pickupLocationController.text =
+              result['address'] ?? 'Unknown location';
           _pickupCoordinates = result['coordinates'];
         } else {
-          _destinationLocationController.text = result['address'] ?? 'Unknown location';
+          _destinationLocationController.text =
+              result['address'] ?? 'Unknown location';
           _destinationCoordinates = result['coordinates'];
         }
       });
-      Fluttertoast.showToast(msg: "${type == 'pickup' ? 'Pickup' : 'Destination'} location selected successfully");
+      Fluttertoast.showToast(
+          msg:
+              "${type == 'pickup' ? 'Pickup' : 'Destination'} location selected successfully");
     } else {
       Fluttertoast.showToast(msg: "No location selected");
     }
@@ -135,38 +140,40 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
 
   Future<ServiceEnquiryResponse?> _submitTransportationEnquiry() async {
     try {
-      const String apiUrl = 'https://54kidsstreet.org/api/enquiry/storeServiceEnquiry';
+      const String apiUrl =
+          'https://54kidsstreet.org/api/enquiry/storeServiceEnquiry';
 
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
 
       request.fields['customer_id'] = widget.customerId?.toString() ?? '0';
       request.fields['service_name'] = widget.subCategoryName;
-      request.fields['service_location'] = _pickupLocationController.text.trim();
-      request.fields['service_description'] = widget.categoryDesc??'';
+      request.fields['service_location'] =
+          _pickupLocationController.text.trim();
+      request.fields['service_description'] = 'NONE';
       request.fields['service_date'] = _selectedDate != null
           ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
           : '';
-      request.fields['service_time'] = _selectedTime != null
-          ? _selectedTime!.format(context)
-          : '';
+      request.fields['service_time'] =
+          _selectedTime != null ? _selectedTime!.format(context) : '';
       request.fields['pickup_location'] = _pickupLocationController.text.trim();
-      request.fields['drop_location'] = _destinationLocationController.text.trim();
+      request.fields['drop_location'] =
+          _destinationLocationController.text.trim();
       request.fields['flat_no'] = '0';
-      request.fields['vehicle_model'] = _vehicleModelController.text.trim();
+      request.fields['vehicle_number'] = _vehicleModelController.text.trim();
       // request.fields['notes'] = .text.trim();
 
       request.fields['shipping_date_time'] =
-      _selectedDate != null && _selectedTime != null
-          ? '${DateFormat('yyyy-MM-dd HH:mm:ss').format(
-        DateTime(
-          _selectedDate!.year,
-          _selectedDate!.month,
-          _selectedDate!.day,
-          _selectedTime!.hour,
-          _selectedTime!.minute,
-        ),
-      )}'
-          : '';
+          _selectedDate != null && _selectedTime != null
+              ? '${DateFormat('yyyy-MM-dd HH:mm:ss').format(
+                  DateTime(
+                    _selectedDate!.year,
+                    _selectedDate!.month,
+                    _selectedDate!.day,
+                    _selectedTime!.hour,
+                    _selectedTime!.minute,
+                  ),
+                )}'
+              : '';
 
       if (_pickupCoordinates != null) {
         request.fields['pickup_lat'] = _pickupCoordinates!.latitude.toString();
@@ -174,8 +181,10 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
       }
 
       if (_destinationCoordinates != null) {
-        request.fields['drop_lat'] = _destinationCoordinates!.latitude.toString();
-        request.fields['drop_lng'] = _destinationCoordinates!.longitude.toString();
+        request.fields['drop_lat'] =
+            _destinationCoordinates!.latitude.toString();
+        request.fields['drop_lng'] =
+            _destinationCoordinates!.longitude.toString();
       }
 
       request.headers.addAll({
@@ -220,13 +229,17 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => ThankYouScreen(serviceResponse: response,showAmountScreen: true,),
+              builder: (context) => ThankYouScreen(
+                serviceResponse: response,
+                showAmountScreen: false,
+              ),
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(response?.msg ?? 'Failed to submit transportation request'),
+              content: Text(
+                  response?.msg ?? 'Failed to submit transportation request'),
               backgroundColor: Colors.red,
             ),
           );
@@ -267,8 +280,10 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
   @override
   Widget build(BuildContext context) {
     // Check if banner and description exist
-    bool hasBanner = widget.categoryBannerImg != null && widget.categoryBannerImg!.isNotEmpty;
-    bool hasDescription = widget.categoryDesc != null && widget.categoryDesc!.isNotEmpty;
+    bool hasBanner = widget.categoryBannerImg != null &&
+        widget.categoryBannerImg!.isNotEmpty;
+    bool hasDescription =
+        widget.categoryDesc != null && widget.categoryDesc!.isNotEmpty;
     bool showBannerSection = hasBanner || hasDescription;
 
     return Scaffold(
@@ -293,54 +308,6 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
         color: whiteColor,
         child: Column(
           children: [
-            // Conditional Banner and Description Section
-            if (showBannerSection)
-              Container(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Banner Image - Only if exists
-                    if (hasBanner)
-                      Container(
-                        height: 150,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          color: lightBlue,
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: FadeInImage.assetNetwork(
-                            placeholder: 'assets/parcelwala4.jpg',
-                            image: 'https://54kidsstreet.org/admin_assets/category_banner_img/${widget.categoryBannerImg}',
-                            fit: BoxFit.cover,
-                            imageErrorBuilder: (context, error, stackTrace) {
-                              return Image.asset(
-                                'assets/parcelwala4.jpg',
-                                fit: BoxFit.cover,
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    if (hasBanner && hasDescription) const SizedBox(height: 8),
-                    // Description - Only if exists
-                    if (hasDescription)
-                      Text(
-                        widget.categoryDesc!,
-                        style: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                  ],
-                ),
-              ),
-            // Form Section - Scrollable
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -348,41 +315,126 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
                   key: _formKey,
                   child: ListView(
                     children: [
-                      // Service Name Display
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Service',
-                            style: TextStyle(
-                              color: darkBlue,
-                              fontSize: 16,
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey[400]!),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              widget.subCategoryName,
-                              style: const TextStyle(
-                                color: darkBlue,
-                                fontSize: 16,
-                                fontFamily: 'Poppins',
+                      // Conditional Banner and Description Section
+                      if (showBannerSection)
+                        Container(
+                          padding: const EdgeInsets.all(0.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'Service',
+                                    style: TextStyle(
+                                      color: darkBlue,
+                                      fontSize: 16,
+                                      fontFamily: 'Poppins',
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12, horizontal: 16),
+                                    decoration: BoxDecoration(
+                                      border:
+                                          Border.all(color: Colors.grey[400]!),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Text(
+                                      widget.subCategoryName,
+                                      style: const TextStyle(
+                                        color: darkBlue,
+                                        fontSize: 16,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
+                              const SizedBox(height: 16),
+                              // Banner Image - Only if exists
+                              if (hasBanner)
+                                Container(
+                                  height: 150,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    color: lightBlue,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: FadeInImage.assetNetwork(
+                                      placeholder: 'assets/parcelwala4.jpg',
+                                      image:
+                                          'https://54kidsstreet.org/admin_assets/category_banner_img/${widget.categoryBannerImg}',
+                                      fit: BoxFit.cover,
+                                      imageErrorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Image.asset(
+                                          'assets/parcelwala4.jpg',
+                                          fit: BoxFit.cover,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              if (hasBanner && hasDescription)
+                                const SizedBox(height: 8),
+                              // Description - Only if exists
+                              if (hasDescription)
+                                Text(
+                                  widget.categoryDesc!,
+                                  style: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                            ],
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
+                        ),
+                      // Service Name Display
+                      // Column(
+                      //   crossAxisAlignment: CrossAxisAlignment.start,
+                      //   children: [
+                      //     const Text(
+                      //       'Service',
+                      //       style: TextStyle(
+                      //         color: darkBlue,
+                      //         fontSize: 16,
+                      //         fontFamily: 'Poppins',
+                      //         fontWeight: FontWeight.w600,
+                      //       ),
+                      //     ),
+                      //     const SizedBox(height: 8),
+                      //     Container(
+                      //       width: double.infinity,
+                      //       padding: const EdgeInsets.symmetric(
+                      //           vertical: 12, horizontal: 16),
+                      //       decoration: BoxDecoration(
+                      //         border: Border.all(color: Colors.grey[400]!),
+                      //         borderRadius: BorderRadius.circular(10),
+                      //       ),
+                      //       child: Text(
+                      //         widget.subCategoryName,
+                      //         style: const TextStyle(
+                      //           color: darkBlue,
+                      //           fontSize: 16,
+                      //           fontFamily: 'Poppins',
+                      //         ),
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
+                      // const SizedBox(height: 16),
+                      const SizedBox(height: 20),
                       // Date and Time Row
                       Row(
                         children: [
@@ -398,16 +450,20 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(color: mediumBlue),
+                                    borderSide:
+                                        const BorderSide(color: mediumBlue),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
                                 child: Text(
                                   _selectedDate == null
                                       ? 'Select date'
-                                      : DateFormat('dd/MM/yyyy').format(_selectedDate!),
+                                      : DateFormat('dd/MM/yyyy')
+                                          .format(_selectedDate!),
                                   style: TextStyle(
-                                    color: _selectedDate == null ? Colors.grey : darkBlue,
+                                    color: _selectedDate == null
+                                        ? Colors.grey
+                                        : darkBlue,
                                   ),
                                 ),
                               ),
@@ -426,7 +482,8 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(color: mediumBlue),
+                                    borderSide:
+                                        const BorderSide(color: mediumBlue),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
@@ -435,7 +492,9 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
                                       ? 'Select time'
                                       : _selectedTime!.format(context),
                                   style: TextStyle(
-                                    color: _selectedTime == null ? Colors.grey : darkBlue,
+                                    color: _selectedTime == null
+                                        ? Colors.grey
+                                        : darkBlue,
                                   ),
                                 ),
                               ),
@@ -476,7 +535,6 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
                       // ),
                       // const SizedBox(height: 16),
 
-
                       // Pickup Location
                       TextFormField(
                         controller: _pickupLocationController,
@@ -492,7 +550,8 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           suffixIcon: IconButton(
-                            icon: const Icon(Icons.location_on, color: mediumBlue),
+                            icon: const Icon(Icons.location_on,
+                                color: mediumBlue),
                             onPressed: () => _pickLocation('pickup'),
                           ),
                         ),
@@ -521,7 +580,8 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           suffixIcon: IconButton(
-                            icon: const Icon(Icons.location_on, color: mediumBlue),
+                            icon: const Icon(Icons.location_on,
+                                color: mediumBlue),
                             onPressed: () => _pickLocation('destination'),
                           ),
                         ),
@@ -578,17 +638,17 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
                   ),
                   child: _isSubmitting
                       ? const CircularProgressIndicator(
-                    color: whiteColor,
-                    strokeWidth: 2,
-                  )
+                          color: whiteColor,
+                          strokeWidth: 2,
+                        )
                       : const Text(
-                    'Submit',
-                    style: TextStyle(
-                      color: whiteColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                          'Submit',
+                          style: TextStyle(
+                            color: whiteColor,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ),

@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import '../lib/constant/app_formatter.dart';
 import '../lib/payment_service/payment_service.dart';
 import '../models/EnquiryResponse.dart';
 import 'HomeServiceView.dart';
@@ -25,12 +26,12 @@ class EnquiryBookingConfirmationWithAmount extends StatefulWidget {
 
 class _EnquiryBookingConfirmationWithAmountState
     extends State<EnquiryBookingConfirmationWithAmount> {
-  double calculatePercentage(double amount) {
-    return amount * (10 / 100);
+  int calculatePercentage(double amount) {
+    return (amount * (10 / 100)).toInt();
   }
 
-  double calculateTotalAmount(double amount, double addingAmount) {
-    return amount + addingAmount;
+  int calculateTotalAmount(double amount, int addingAmount) {
+    return (amount + addingAmount).toInt();
   }
 
   bool isPaymentLoading = false;
@@ -41,11 +42,8 @@ class _EnquiryBookingConfirmationWithAmountState
         isPaymentLoading = true;
       });
       PaymentService().startPayment(context,
-          amount: calculateTotalAmount(
-              double.parse(
-                  (widget.enquiryResponse.data?.amount ?? 0).toString()),
-              calculatePercentage(double.parse(
-                  (widget.enquiryResponse.data?.amount ?? 0).toString()))),
+          amount: calculatePercentage(double.parse(
+              (widget.enquiryResponse.data?.amount ?? 0).toString())),
           name: 'User',
           orderNumber: (widget.enquiryResponse.data?.orderNo ?? '').toString());
     } catch (e) {
@@ -97,7 +95,7 @@ class _EnquiryBookingConfirmationWithAmountState
                 child: const Icon(
                   Icons.check,
                   color: Colors.white,
-                  size: 80,
+                  size: 50,
                 ),
               ),
               const SizedBox(height: 30),
@@ -111,9 +109,9 @@ class _EnquiryBookingConfirmationWithAmountState
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 30),
               Text(
-                'Your Estimate : ${widget.enquiryResponse.data?.amount ?? 0}',
+                'Your Estimate Amount: ${double.parse((widget.enquiryResponse.data?.amount ?? 0).toString()).toStringAsFixed(0)}',
                 style: const TextStyle(
                   fontSize: 16,
                   color: darkBlue,
@@ -133,7 +131,7 @@ class _EnquiryBookingConfirmationWithAmountState
               ),
               const SizedBox(height: 30),
               Text(
-                'Book your slot by paying only 10% of total estimate : ${calculatePercentage(double.parse((widget.enquiryResponse.data?.amount ?? 0).toString()))}.',
+                'Book your slot by paying only 10% of total estimate : ${calculatePercentage(double.parse((widget.enquiryResponse.data?.amount ?? 0).toString()))}',
                 style: const TextStyle(
                   fontSize: 16,
                   color: darkBlue,
@@ -142,18 +140,18 @@ class _EnquiryBookingConfirmationWithAmountState
                 textAlign: TextAlign.center,
               ),
               SizedBox(
-                height: 20,
+                height: 40,
               ),
-              Text(
-                'Total amount to pay : ${calculateTotalAmount(double.parse((widget.enquiryResponse.data?.amount ?? 0).toString()), calculatePercentage(double.parse((widget.enquiryResponse.data?.amount ?? 0).toString())))}.',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: darkBlue,
-                  fontFamily: 'Poppins',
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40),
+              // Text(
+              //   'Total amount to pay : ${calculateTotalAmount(double.parse((widget.enquiryResponse.data?.amount ?? 0).toString()), calculatePercentage(double.parse((widget.enquiryResponse.data?.amount ?? 0).toString())))}',
+              //   style: const TextStyle(
+              //     fontSize: 16,
+              //     color: darkBlue,
+              //     fontFamily: 'Poppins',
+              //   ),
+              //   textAlign: TextAlign.center,
+              // ),
+              // const SizedBox(height: 40),
               Row(
                 spacing: 20,
                 children: [
@@ -190,7 +188,7 @@ class _EnquiryBookingConfirmationWithAmountState
                     child: SizedBox(
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: isPaymentLoading ? null : _payButtonSubmit(),
+                        onPressed: isPaymentLoading ? null : _payButtonSubmit,
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               isPaymentLoading ? lightBlue : mediumBlue,
@@ -240,41 +238,41 @@ class EnquiryThankYouScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                height: 120,
-                width: 120,
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(60),
-                ),
-                child: const Icon(
-                  Icons.check,
-                  color: Colors.white,
-                  size: 80,
-                ),
-              ),
-              const SizedBox(height: 30),
-              const Text(
-                'Thank You!',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: darkBlue,
-                  fontFamily: 'Poppins',
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 15),
-              Text(
-                enquiryResponse.msg,
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: darkBlue,
-                  fontFamily: 'Poppins',
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 30),
+              // Container(
+              //   height: 120,
+              //   width: 120,
+              //   decoration: BoxDecoration(
+              //     color: Colors.green,
+              //     borderRadius: BorderRadius.circular(60),
+              //   ),
+              //   child: const Icon(
+              //     Icons.check,
+              //     color: Colors.white,
+              //     size: 80,
+              //   ),
+              // ),
+              // const SizedBox(height: 30),
+              // const Text(
+              //   'Thank You!',
+              //   style: TextStyle(
+              //     fontSize: 32,
+              //     fontWeight: FontWeight.bold,
+              //     color: darkBlue,
+              //     fontFamily: 'Poppins',
+              //   ),
+              //   textAlign: TextAlign.center,
+              // ),
+              // const SizedBox(height: 15),
+              // Text(
+              //   enquiryResponse.msg,
+              //   style: const TextStyle(
+              //     fontSize: 18,
+              //     color: darkBlue,
+              //     fontFamily: 'Poppins',
+              //   ),
+              //   textAlign: TextAlign.center,
+              // ),
+              // const SizedBox(height: 30),
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -293,7 +291,7 @@ class EnquiryThankYouScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Enquiry Details:',
+                      'Your Booking Details:',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -310,10 +308,23 @@ class EnquiryThankYouScreen extends StatelessWidget {
                         enquiryResponse.data?.pickupLocation ?? 'N/A'),
                     _buildDetailRow('Drop Location:',
                         enquiryResponse.data?.dropLocation ?? 'N/A'),
-                    _buildDetailRow('Flat/Shop No:',
-                        enquiryResponse.data?.flatShopNo ?? 'N/A'),
-                    _buildDetailRow('Shipping Date:',
-                        enquiryResponse.data?.shippingDateTime ?? 'N/A'),
+                    _buildDetailRow(
+                      'Flat/Shop No:',
+                      enquiryResponse.data?.flatShopNo == 'NONE'
+                          ? 'NA'
+                          : (enquiryResponse.data?.flatShopNo ?? 'N/A'),
+                    ),
+                    _buildDetailRow(
+                      'Shifting Date:',
+                      AppFormatter.dateFormater(
+                          date:
+                              enquiryResponse.data?.shippingDateTime ?? 'N/A'),
+                    ),
+                    _buildDetailRow(
+                      'Created Date:',
+                      AppFormatter.dateFormater(
+                          date: enquiryResponse.data?.createdAt ?? 'N/A'),
+                    ),
                     _buildDetailRow('Floor Number:',
                         enquiryResponse.data?.floorNumber ?? 'N/A'),
                     _buildDetailRow('Pickup Service Lift:',
@@ -344,7 +355,7 @@ class EnquiryThankYouScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Selected Products:',
+                        'Selected Inventory:',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -359,23 +370,23 @@ class EnquiryThankYouScreen extends StatelessWidget {
                   ),
                 ),
               const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: lightBlue.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Text(
-                  'Our team will contact you soon to confirm your shifting request. Thank you for choosing Mumbai Metro Packers and Movers!',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: darkBlue,
-                    fontFamily: 'Poppins',
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 30),
+              // Container(
+              //   padding: const EdgeInsets.all(15),
+              //   decoration: BoxDecoration(
+              //     color: lightBlue.withOpacity(0.2),
+              //     borderRadius: BorderRadius.circular(10),
+              //   ),
+              //   child: const Text(
+              //     'Our team will contact you soon to confirm your shifting request. Thank you for choosing Mumbai Metro Packers and Movers!',
+              //     style: TextStyle(
+              //       fontSize: 16,
+              //       color: darkBlue,
+              //       fontFamily: 'Poppins',
+              //     ),
+              //     textAlign: TextAlign.center,
+              //   ),
+              // ),
+              // const SizedBox(height: 30),
               SizedBox(
                 width: double.infinity,
                 height: 50,

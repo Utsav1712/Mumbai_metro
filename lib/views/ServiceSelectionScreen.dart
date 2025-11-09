@@ -2,23 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../lib/constant/app_color.dart';
 import '../lib/views/location_selection_screen.dart';
+import '../models/EnquiryResponse.dart';
 import '../models/ShiftData.dart';
+import 'EnquiryThankYouScreen.dart';
 import 'ProductSelectionScreen.dart';
 import '../views/SelectedProduct.dart';
 import 'YourFinalScreen.dart';
-
-const Color darkBlue = Color(0xFF03669d);
-const Color mediumBlue = Color(0xFF37b3e7);
-const Color lightBlue = Color(0xFF7ed2f7);
-const Color whiteColor = Color(0xFFf7f7f7);
 
 class ServiceSelectionScreen extends StatefulWidget {
   final int subCategoryId;
   final String subCategoryName;
   final int? customerId;
-  final String? categoryBannerImg;
-  final String? categoryDesc;
+
+  // final String? categoryBannerImg;
+  // final String? categoryDesc;
   final ShiftData? shiftData;
 
   const ServiceSelectionScreen({
@@ -26,8 +25,8 @@ class ServiceSelectionScreen extends StatefulWidget {
     required this.subCategoryId,
     required this.subCategoryName,
     this.customerId,
-    this.categoryBannerImg,
-    this.categoryDesc,
+    // this.categoryBannerImg,
+    // this.categoryDesc,
     this.shiftData,
   }) : super(key: key);
 
@@ -109,6 +108,8 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen> {
     }
   }
 
+  bool _isSubmitting = false;
+
   void _updateServiceCount(int serviceId, List<SelectedProduct> products) {
     serviceSelectedProducts[serviceId] = products;
     setState(() {
@@ -117,181 +118,337 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen> {
     });
   }
 
+  Map<String, String> _formatProductsForAPI(
+      {required List<SelectedProduct> selectedItems}) {
+    Map<String, String> productsMap = {};
+
+    for (int i = 0; i < selectedItems.length; i++) {
+      final product = selectedItems[i];
+      productsMap['products_item[$i][product_name]'] = product.productName;
+      productsMap['products_item[$i][quantity]'] = product.count.toString();
+    }
+
+    return productsMap;
+  }
+
+  String _formatFloorNumber(int floor) {
+    if (floor == 0) return "Ground Floor";
+    return "$floor";
+  }
+
+  Future<EnquiryResponse?> _submitEnquiry(
+      {required List<SelectedProduct> selectedItems}) async {
+    try {
+      const String apiUrl = 'https://54kidsstreet.org/api/enquiry';
+
+      var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
+
+      request.fields['customer_id'] =
+          widget.shiftData?.customerId?.toString() ?? '0';
+      request.fields['pickup_location'] = widget.shiftData?.sourceAddress ?? '';
+      request.fields['drop_location'] =
+          widget.shiftData?.destinationAddress ?? '';
+      // request.fields['flat_shop_no'] = '${widget.shiftData?.floorSource}F';
+      request.fields['flat_shop_no'] = 'NONE';
+      request.fields['shipping_date_time'] =
+          '${widget.shiftData?.selectedDate} ${widget.shiftData?.selectedTime}';
+      request.fields['floor_number'] =
+          /*_formatFloorNumber(widget.shiftData.floorSource);*/
+          widget.shiftData!.floorSource.toString();
+      request.fields['pickup_services_lift'] =
+          /*widget.shiftData.serviceLiftSource ? 'YES' : 'NO'*/
+          widget.shiftData!.serviceLiftSource ? '1' : '0';
+      request.fields['drop_services_lift'] =
+          /*widget.shiftData.serviceLiftDestination ? 'YES' : 'NO'*/
+          widget.shiftData!.serviceLiftDestination ? '1' : '0';
+      request.fields
+          .addAll(_formatProductsForAPI(selectedItems: selectedItems));
+      request.fields['km_distance'] = '0';
+
+      if (widget.shiftData!.sourceCoordinates != null) {
+        request.fields['pickup_latitude'] =
+            widget.shiftData!.sourceCoordinates!.latitude.toString();
+        request.fields['pickup_longitude'] =
+            widget.shiftData!.sourceCoordinates!.longitude.toString();
+      }
+
+      if (widget.shiftData!.destinationCoordinates != null) {
+        request.fields['drop_latitude'] =
+            widget.shiftData!.destinationCoordinates!.latitude.toString();
+        request.fields['drop_longitude'] =
+            widget.shiftData!.destinationCoordinates!.longitude.toString();
+      }
+
+      request.headers.addAll({
+        'Accept': 'application/json',
+        'Content-Type': 'multipart/form-data',
+      });
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final jsonData = json.decode(response.body);
+        print('Res---->>${response.body}');
+        return EnquiryResponse.fromJson(jsonData);
+      } else {
+        print('Failed to submit enquiry: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Error submitting enquiry: $e');
+      return null;
+    }
+  }
+
+  void _handleSubmit({required List<SelectedProduct> selctedItems}) async {
+    if (widget.shiftData?.customerId == null ||
+        widget.shiftData!.customerId == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid customer ID. Please log in again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    if (_isSubmitting) return;
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      EnquiryResponse? response =
+          await _submitEnquiry(selectedItems: selctedItems);
+
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      if (response != null && response.status) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                EnquiryThankYouScreen(enquiryResponse: response),
+          ),
+          // MaterialPageRoute(
+          //   builder: (context) => EnquiryBookingConfirmationWithAmount(enquiryResponse: response),
+          // ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response?.msg ?? 'Failed to submit enquiry'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isSubmitting = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('An error occurred. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    bool hasBanner = widget.categoryBannerImg != null && widget.categoryBannerImg!.isNotEmpty;
-    bool hasDescription = widget.categoryDesc != null && widget.categoryDesc!.isNotEmpty;
-    bool showBannerSection = hasBanner || hasDescription;
+    // bool hasBanner = widget.categoryBannerImg != null && widget.categoryBannerImg!.isNotEmpty;
+    // bool hasDescription = widget.categoryDesc != null && widget.categoryDesc!.isNotEmpty;
+    // bool showBannerSection = hasBanner || hasDescription;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
           '${widget.subCategoryName} Inventory',
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Poppins',
             fontWeight: FontWeight.bold,
-            color: whiteColor,
+            color: AppColor.whiteColor,
             fontSize: 20,
           ),
         ),
-        backgroundColor: darkBlue,
+        backgroundColor: AppColor.darkBlue,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: whiteColor),
+          icon: const Icon(Icons.arrow_back, color: AppColor.whiteColor),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Column(
         children: [
-          if (showBannerSection)
-            Container(
+          // if (showBannerSection)
+          //   Container(
+          //     padding: const EdgeInsets.all(16.0),
+          //     child: Column(
+          //       crossAxisAlignment: CrossAxisAlignment.start,
+          //       children: [
+          //         if (hasBanner)
+          //           Container(
+          //             height: 150,
+          //             width: double.infinity,
+          //             decoration: BoxDecoration(
+          //               borderRadius: BorderRadius.circular(8),
+          //               color: lightBlue,
+          //             ),
+          //             child: ClipRRect(
+          //               borderRadius: BorderRadius.circular(8),
+          //               child: FadeInImage.assetNetwork(
+          //                 placeholder: 'assets/parcelwala4.jpg',
+          //                 image: 'https://54kidsstreet.org/admin_assets/category_banner_img/${widget.categoryBannerImg}',
+          //                 fit: BoxFit.cover,
+          //                 imageErrorBuilder: (context, error, stackTrace) {
+          //                   return Image.asset(
+          //                     'assets/parcelwala4.jpg',
+          //                     fit: BoxFit.cover,
+          //                   );
+          //                 },
+          //               ),
+          //             ),
+          //           ),
+          //         if (hasBanner && hasDescription) const SizedBox(height: 8),
+          //         if (hasDescription)
+          //           Text(
+          //             widget.categoryDesc!,
+          //             style: const TextStyle(
+          //               fontFamily: 'Poppins',
+          //               fontSize: 12,
+          //               color: Colors.grey,
+          //             ),
+          //             maxLines: 3,
+          //             overflow: TextOverflow.ellipsis,
+          //           ),
+          // const SizedBox(height: 16),
+          Align(
+            alignment: Alignment.topLeft,
+            child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (hasBanner)
-                    Container(
-                      height: 150,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: lightBlue,
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: FadeInImage.assetNetwork(
-                          placeholder: 'assets/parcelwala4.jpg',
-                          image: 'https://54kidsstreet.org/admin_assets/category_banner_img/${widget.categoryBannerImg}',
-                          fit: BoxFit.cover,
-                          imageErrorBuilder: (context, error, stackTrace) {
-                            return Image.asset(
-                              'assets/parcelwala4.jpg',
-                              fit: BoxFit.cover,
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  if (hasBanner && hasDescription) const SizedBox(height: 8),
-                  if (hasDescription)
-                    Text(
-                      widget.categoryDesc!,
-                      style: const TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Select Services',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+              child: const Text(
+                'Select Inventory',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey,
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
+          ),
+
+          // const SizedBox(height: 16),
+          //   ],
+          // ),
+          // ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: isLoading
                   ? const Center(
-                  child: CircularProgressIndicator(color: darkBlue))
+                      child:
+                          CircularProgressIndicator(color: AppColor.darkBlue))
                   : errorMessage != null
-                  ? Center(
-                  child: Text(errorMessage!,
-                      style: const TextStyle(color: darkBlue)))
-                  : services.isEmpty
-                  ? const Center(
-                  child: Text('No services available',
-                      style: TextStyle(color: darkBlue)))
-                  : ListView.builder(
-                itemCount: services.length,
-                itemBuilder: (context, index) {
-                  final service = services[index];
-                  final count =
-                      serviceProductCounts[service.id] ?? 0;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
-                    child: Stack(
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      ProductSelectionScreen(
-                                        serviceId: service.id,
-                                        serviceName:
-                                        service.serviceName,
-                                        selectedDate: widget.shiftData?.selectedDate ?? '',
-                                        selectedTime: widget.shiftData?.selectedTime ?? '',
-                                        initialSelectedProducts:
-                                        serviceSelectedProducts[
-                                        service.id] ??
-                                            [],
-                                        customerId: widget.customerId,
+                      ? Center(
+                          child: Text(errorMessage!,
+                              style: const TextStyle(color: AppColor.darkBlue)))
+                      : services.isEmpty
+                          ? const Center(
+                              child: Text('No services available',
+                                  style: TextStyle(color: AppColor.darkBlue)))
+                          : ListView.builder(
+                              itemCount: services.length,
+                              itemBuilder: (context, index) {
+                                final service = services[index];
+                                final count =
+                                    serviceProductCounts[service.id] ?? 0;
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 12.0),
+                                  child: Stack(
+                                    children: [
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton(
+                                          onPressed: () async {
+                                            final result = await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ProductSelectionScreen(
+                                                  serviceId: service.id,
+                                                  serviceName:
+                                                      service.serviceName,
+                                                  selectedDate: widget.shiftData
+                                                          ?.selectedDate ??
+                                                      '',
+                                                  selectedTime: widget.shiftData
+                                                          ?.selectedTime ??
+                                                      '',
+                                                  initialSelectedProducts:
+                                                      serviceSelectedProducts[
+                                                              service.id] ??
+                                                          [],
+                                                  customerId: widget.customerId,
+                                                ),
+                                              ),
+                                            );
+                                            if (result
+                                                is List<SelectedProduct>) {
+                                              _updateServiceCount(
+                                                  service.id, result);
+                                            }
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                                AppColor.mediumBlue,
+                                            minimumSize:
+                                                const Size(double.infinity, 50),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                          child: Text(
+                                            service.serviceName,
+                                            style: TextStyle(
+                                              color: AppColor.whiteColor,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                ),
-                              );
-                              if (result is List<SelectedProduct>) {
-                                _updateServiceCount(
-                                    service.id, result);
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: mediumBlue,
-                              minimumSize:
-                              const Size(double.infinity, 50),
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                BorderRadius.circular(12),
-                              ),
+                                      if (count > 0)
+                                        Positioned(
+                                          right: 12,
+                                          top: 10,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(6),
+                                            decoration: const BoxDecoration(
+                                              color: Colors.red,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Text(
+                                              '$count',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                );
+                              },
                             ),
-                            child: Text(
-                              service.serviceName,
-                              style: const TextStyle(
-                                color: whiteColor,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (count > 0)
-                          Positioned(
-                            right: 12,
-                            top: 10,
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Text(
-                                '$count',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  );
-                },
-              ),
             ),
           ),
           Padding(
@@ -300,68 +457,80 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  if (serviceProductCounts.values
-                      .every((count) => count == 0)) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                            'Please select products for at least one service'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                    return;
-                  }
-
-                  // Update shiftData with selected products
-                  if (widget.shiftData != null) {
-                    widget.shiftData!.selectedProducts = serviceSelectedProducts.values
-                        .expand((list) => list)
-                        .toList();
-
-                    // Navigate directly to confirmation screen (YourFinalScreen)
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            YourFinalScreen(shiftData: widget.shiftData!),
-                      ),
-                    );
+                  if (_isSubmitting) {
+                    return null;
                   } else {
-                    // Fallback to old behavior if no shiftData
-                    final shiftData = ShiftData(
-                      serviceId: 0,
-                      serviceName: 'Multiple Services',
-                      selectedDate: '',
-                      selectedTime: '',
-                      selectedProducts: serviceSelectedProducts.values
-                          .expand((list) => list)
-                          .toList(),
-                      customerId: widget.customerId,
-                    );
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            LocationSelectionScreen(shiftData: shiftData),
-                      ),
-                    );
+                    if (serviceProductCounts.values
+                        .every((count) => count == 0)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'Please select products for at least one service'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    // Update shiftData with selected products
+                    if (widget.shiftData != null) {
+                      widget.shiftData!.selectedProducts =
+                          serviceSelectedProducts.values
+                              .expand((list) => list)
+                              .toList();
+                      _handleSubmit(
+                          selctedItems: widget.shiftData!.selectedProducts);
+                      // Navigate directly to confirmation screen (YourFinalScreen)
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) =>
+                      //         YourFinalScreen(shiftData: widget.shiftData!),
+                      //   ),
+                      // );
+                    } else {
+                      // Fallback to old behavior if no shiftData
+                      final shiftData = ShiftData(
+                        serviceId: 0,
+                        serviceName: 'Multiple Services',
+                        selectedDate: '',
+                        selectedTime: '',
+                        selectedProducts: serviceSelectedProducts.values
+                            .expand((list) => list)
+                            .toList(),
+                        customerId: widget.customerId,
+                      );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              LocationSelectionScreen(shiftData: shiftData),
+                        ),
+                      );
+                    }
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: darkBlue,
+                  backgroundColor: AppColor.darkBlue,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
-                  'Next',
-                  style: TextStyle(
-                    color: whiteColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: _isSubmitting
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        'Next',
+                        style: TextStyle(
+                          color: AppColor.whiteColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
             ),
           ),

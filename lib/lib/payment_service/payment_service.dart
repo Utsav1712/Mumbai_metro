@@ -17,7 +17,7 @@ class PaymentService {
 
   bool _initialized = false;
 
-  void _init(BuildContext context, double amount, String orderNumber) {
+  void _init(BuildContext context, int amount, String orderNumber) {
     if (_initialized) return;
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS,
         (PaymentSuccessResponse response) {
@@ -41,7 +41,7 @@ class PaymentService {
 
   void startPayment(
     BuildContext context, {
-    required double amount,
+    required int amount,
     required String name,
     required String orderNumber,
     String description = 'Payment for your order',
@@ -77,7 +77,7 @@ class PaymentService {
   Future<void> _handlePaymentSuccess(
     BuildContext context,
     PaymentSuccessResponse response,
-    double amount,
+    int amount,
     String orderNumber,
   ) async {
     await callSuccessApi(
@@ -117,7 +117,7 @@ class PaymentService {
 
   Future<void> callSuccessApi({
     required BuildContext context,
-    required double amount,
+    required int amount,
     required String orderNumber,
     required PaymentSuccessResponse paymentResponse,
   }) async {

@@ -217,12 +217,15 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
               borderRadius: BorderRadius.circular(25),
             ),
           ),
-          child: Text(
-            subCategory.subCategoryName,
-            style: const TextStyle(
-              color: whiteColor,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              subCategory.subCategoryName,
+              style: const TextStyle(
+                color: whiteColor,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),
@@ -437,8 +440,7 @@ class _ServiceFormScreenWithCoordinateState
 
       request.fields['customer_id'] = widget.customerId?.toString() ?? '0';
       request.fields['service_name'] = widget.subCategoryName;
-      request.fields['service_description'] =
-          _serviceDescriptionController.text.trim();
+      request.fields['service_description'] = 'NONE';
       request.fields['service_location'] =
           _pickupLocationController.text.trim();
       request.fields['flat_no'] = _flatNumberController.text.trim();
@@ -519,7 +521,10 @@ class _ServiceFormScreenWithCoordinateState
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => ThankYouScreen(serviceResponse: response,showAmountScreen: true,),
+              builder: (context) => ThankYouScreen(
+                serviceResponse: response,
+                showAmountScreen: false,
+              ),
             ),
           );
         } else {
@@ -608,56 +613,6 @@ class _ServiceFormScreenWithCoordinateState
         color: whiteColor,
         child: Column(
           children: [
-            if (showBannerSection)
-              Container(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (hasBanner)
-                      Container(
-                        height: 150,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          color: lightBlue,
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: FadeInImage.assetNetwork(
-                            placeholder: 'assets/parcelwala4.jpg',
-                            image: _getBannerImageUrl()!,
-                            fit: BoxFit.cover,
-                            imageErrorBuilder: (context, error, stackTrace) {
-                              debugPrint("Image loading error: $error");
-                              return Container(
-                                color: lightBlue,
-                                child: const Center(
-                                  child: Text(
-                                    'Image not available',
-                                    style: TextStyle(color: darkBlue),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    if (hasBanner && hasDescription) const SizedBox(height: 8),
-                    if (hasDescription)
-                      Text(
-                        widget.categoryDesc!,
-                        style: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                  ],
-                ),
-              ),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -668,6 +623,7 @@ class _ServiceFormScreenWithCoordinateState
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const SizedBox(height: 10),
                           const Text(
                             'Service Name',
                             style: TextStyle(
@@ -676,7 +632,7 @@ class _ServiceFormScreenWithCoordinateState
                               fontFamily: 'Poppins',
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 10),
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
@@ -696,29 +652,83 @@ class _ServiceFormScreenWithCoordinateState
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _serviceDescriptionController,
-                        decoration: InputDecoration(
-                          labelText: 'Service Description',
-                          labelStyle: const TextStyle(color: darkBlue),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(color: mediumBlue),
-                            borderRadius: BorderRadius.circular(10),
+                      const SizedBox(height: 10),
+                      if (showBannerSection)
+                        Container(
+                          padding: const EdgeInsets.all(0.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (hasBanner)
+                                Container(
+                                  height: 150,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    color: lightBlue,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: FadeInImage.assetNetwork(
+                                      placeholder: 'assets/parcelwala4.jpg',
+                                      image: _getBannerImageUrl()!,
+                                      fit: BoxFit.cover,
+                                      imageErrorBuilder:
+                                          (context, error, stackTrace) {
+                                        debugPrint(
+                                            "Image loading error: $error");
+                                        return Container(
+                                          color: lightBlue,
+                                          child: const Center(
+                                            child: Text(
+                                              'Image not available',
+                                              style: TextStyle(color: darkBlue),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              if (hasBanner && hasDescription)
+                                const SizedBox(height: 8),
+                              if (hasDescription)
+                                Text(
+                                  widget.categoryDesc!,
+                                  style: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                            ],
                           ),
                         ),
-                        maxLines: 4,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter the service description';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 8),
+                      // TextFormField(
+                      //   controller: _serviceDescriptionController,
+                      //   decoration: InputDecoration(
+                      //     labelText: 'Service Description',
+                      //     labelStyle: const TextStyle(color: darkBlue),
+                      //     border: OutlineInputBorder(
+                      //       borderRadius: BorderRadius.circular(10),
+                      //     ),
+                      //     focusedBorder: OutlineInputBorder(
+                      //       borderSide: const BorderSide(color: mediumBlue),
+                      //       borderRadius: BorderRadius.circular(10),
+                      //     ),
+                      //   ),
+                      //   maxLines: 4,
+                      //   validator: (value) {
+                      //     if (value == null || value.isEmpty) {
+                      //       return 'Please enter the service description';
+                      //     }
+                      //     return null;
+                      //   },
+                      // ),
+                      // const SizedBox(height: 16),
                       Padding(
                         padding: EdgeInsets.only(top: 8.0, bottom: 12),
                         child: const Text(
@@ -1130,7 +1140,9 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
       request.fields['customer_id'] = widget.customerId?.toString() ?? '0';
       request.fields['service_name'] = widget.subCategoryName;
       request.fields['service_description'] =
-          _serviceDescriptionController.text.trim();
+          _serviceDescriptionController.text.isNotEmpty
+              ? _serviceDescriptionController.text.trim()
+              : 'NONE';
       request.fields['service_location'] =
           _serviceLocationController.text.trim();
       request.fields['flat_no'] = _flatNumberController.text.trim();
@@ -1145,12 +1157,13 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
 
       //Field which was null
 
-      request.fields['pickup_location'] = _serviceLocationController.text.trim();
-      request.fields['drop_location'] =  'NONE';
+      request.fields['pickup_location'] =
+          _serviceLocationController.text.trim();
+      request.fields['drop_location'] = 'NONE';
 
       if (_selectedLocation != null) {
-      request.fields['pickup_lat']=_selectedLocation!.latitude.toString();
-      request.fields['pickup_lng']= _selectedLocation!.longitude.toString();
+        request.fields['pickup_lat'] = _selectedLocation!.latitude.toString();
+        request.fields['pickup_lng'] = _selectedLocation!.longitude.toString();
       }
       request.fields['drop_lat'] = '0';
       request.fields['drop_lng'] = '0';
@@ -1198,7 +1211,10 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => ThankYouScreen(serviceResponse: response,showAmountScreen: false,),
+              builder: (context) => ThankYouScreen(
+                serviceResponse: response,
+                showAmountScreen: false,
+              ),
             ),
           );
         } else {
@@ -1278,56 +1294,6 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
         color: whiteColor,
         child: Column(
           children: [
-            if (showBannerSection)
-              Container(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (hasBanner)
-                      Container(
-                        height: 150,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          color: lightBlue,
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: FadeInImage.assetNetwork(
-                            placeholder: 'assets/parcelwala4.jpg',
-                            image: _getBannerImageUrl()!,
-                            fit: BoxFit.cover,
-                            imageErrorBuilder: (context, error, stackTrace) {
-                              debugPrint("Image loading error: $error");
-                              return Container(
-                                color: lightBlue,
-                                child: const Center(
-                                  child: Text(
-                                    'Image not available',
-                                    style: TextStyle(color: darkBlue),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    if (hasBanner && hasDescription) const SizedBox(height: 8),
-                    if (hasDescription)
-                      Text(
-                        widget.categoryDesc!,
-                        style: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                  ],
-                ),
-              ),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -1338,6 +1304,7 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const SizedBox(height: 16),
                           const Text(
                             'Service Name',
                             style: TextStyle(
@@ -1366,11 +1333,65 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                           ),
                         ],
                       ),
+                      if (showBannerSection)
+                        Container(
+                          padding: const EdgeInsets.all(0.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 8),
+                              if (hasBanner)
+                                Container(
+                                  height: 150,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    color: lightBlue,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: FadeInImage.assetNetwork(
+                                      placeholder: 'assets/parcelwala4.jpg',
+                                      image: _getBannerImageUrl()!,
+                                      fit: BoxFit.cover,
+                                      imageErrorBuilder:
+                                          (context, error, stackTrace) {
+                                        debugPrint(
+                                            "Image loading error: $error");
+                                        return Container(
+                                          color: lightBlue,
+                                          child: const Center(
+                                            child: Text(
+                                              'Image not available',
+                                              style: TextStyle(color: darkBlue),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              if (hasBanner && hasDescription)
+                                const SizedBox(height: 8),
+                              if (hasDescription)
+                                Text(
+                                  widget.categoryDesc!,
+                                  style: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                            ],
+                          ),
+                        ),
                       const SizedBox(height: 16),
                       TextFormField(
-                        controller: _serviceDescriptionController,
+                        controller: _flatNumberController,
                         decoration: InputDecoration(
-                          labelText: 'Service Description',
+                          labelText: 'Flat Number',
                           labelStyle: const TextStyle(color: darkBlue),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -1380,10 +1401,9 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        maxLines: 4,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter the service description';
+                            return 'Please enter the flat number';
                           }
                           return null;
                         },
@@ -1417,27 +1437,6 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _flatNumberController,
-                        decoration: InputDecoration(
-                          labelText: 'Flat Number',
-                          labelStyle: const TextStyle(color: darkBlue),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(color: mediumBlue),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter the flat number';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
                       InkWell(
                         onTap: () => _selectDate(context),
                         child: InputDecorator(
@@ -1455,7 +1454,7 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                           child: Text(
                             _selectedDate == null
                                 ? 'Select a date'
-                                : DateFormat('yyyy-MM-dd')
+                                : DateFormat('dd-MM-yyyy')
                                     .format(_selectedDate!),
                             style: const TextStyle(color: darkBlue),
                           ),
@@ -1469,6 +1468,28 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                             style: TextStyle(color: Colors.red, fontSize: 12),
                           ),
                         ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _serviceDescriptionController,
+                        decoration: InputDecoration(
+                          labelText: 'Service Description',
+                          labelStyle: const TextStyle(color: darkBlue),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(color: mediumBlue),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        maxLines: 4,
+                        // validator: (value) {
+                        //   if (value == null || value.isEmpty) {
+                        //     return 'Please enter the service description';
+                        //   }
+                        //   return null;
+                        // },
+                      ),
                       const SizedBox(height: 24),
                     ],
                   ),

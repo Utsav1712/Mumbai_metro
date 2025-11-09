@@ -1,5 +1,6 @@
 // lib/views/ThankYouScreen.dart
 import 'package:flutter/material.dart';
+import 'package:new_packers_application/lib/constant/app_formatter.dart';
 import '../lib/payment_service/payment_service.dart';
 import '../models/ServiceEnquiryData.dart';
 import 'HomeServiceView.dart';
@@ -22,7 +23,6 @@ class BookingConfirmationWithAmount extends StatefulWidget {
 
 class _BookingConfirmationWithAmountState
     extends State<BookingConfirmationWithAmount> {
-
   @override
   Widget build(BuildContext context) {
     double calculatePercentage(double amount) {
@@ -256,10 +256,11 @@ class ThankYouScreen extends StatelessWidget {
   final ServiceEnquiryResponse serviceResponse;
   bool showAmountScreen;
 
-  ThankYouScreen(
-      {super.key,
-      required this.serviceResponse,
-      required this.showAmountScreen});
+  ThankYouScreen({
+    super.key,
+    required this.serviceResponse,
+    required this.showAmountScreen,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -282,7 +283,7 @@ class ThankYouScreen extends StatelessWidget {
                 child: const Icon(
                   Icons.check,
                   color: Colors.white,
-                  size: 80,
+                  size: 50,
                 ),
               ),
               const SizedBox(height: 30),
@@ -296,11 +297,11 @@ class ThankYouScreen extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 10),
               Text(
-                serviceResponse.msg,
+                'Your enquiry submitted successfully',
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                   color: darkBlue,
                   fontFamily: 'Poppins',
                 ),
@@ -325,7 +326,7 @@ class ThankYouScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Service Details:',
+                      'Booking Details:',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -340,14 +341,48 @@ class ThankYouScreen extends StatelessWidget {
                         '#${serviceResponse.data?.orderNo ?? 'N/A'}'),
                     _buildDetailRow('Service Name:',
                         serviceResponse.data?.serviceName ?? 'N/A'),
-                    _buildDetailRow('Service Date:',
-                        serviceResponse.data?.serviceDate ?? 'N/A'),
-                    _buildDetailRow('Location:',
-                        serviceResponse.data?.serviceLocation ?? 'N/A'),
+                    serviceResponse.data?.flatNo == '0'
+                        ? SizedBox()
+                        : _buildDetailRow('Flat Number:',
+                            serviceResponse.data?.flatNo ?? 'N/A'),
+                    if (serviceResponse.data?.destinationLocation == null ||
+                        serviceResponse.data?.destinationLocation ==
+                            'NONE') ...[
+                      _buildDetailRow('Location:',
+                          serviceResponse.data?.serviceLocation ?? 'N/A'),
+                    ],
+                    if (serviceResponse.data?.destinationLocation != null ||
+                        serviceResponse.data?.destinationLocation !=
+                            'NONE') ...[
+                      _buildDetailRow('Pickup Location:',
+                          serviceResponse.data?.serviceLocation ?? 'N/A'),
+                      _buildDetailRow('Destination Location:',
+                          serviceResponse.data?.destinationLocation ?? 'N/A'),
+                    ],
+                    serviceResponse.data?.vehicleDetails != ''
+                        ? _buildDetailRow('Vehicle:',
+                            serviceResponse.data?.vehicleDetails ?? 'N/A')
+                        : SizedBox(),
+                    if (serviceResponse.data?.notes != null ||
+                        serviceResponse.data?.notes !=
+                            '') ...[
+                      _buildDetailRow('Notes:',
+                          serviceResponse.data?.notes ?? 'N/A'),
+                    ],
                     _buildDetailRow(
-                        'Flat Number:', serviceResponse.data?.flatNo ?? 'N/A'),
-                    _buildDetailRow('Description:',
-                        serviceResponse.data?.serviceDescription ?? 'N/A'),
+                      'Service Date:',
+                      AppFormatter.dateFormater(
+                          date: serviceResponse.data?.serviceDate ?? 'N/A'),
+                    ),
+                    _buildDetailRow(
+                      'Created Date:',
+                      AppFormatter.dateFormater(
+                          date: serviceResponse.data?.createdAt ?? 'N/A'),
+                    ),
+                    serviceResponse.data?.serviceDescription != 'NONE'
+                        ? _buildDetailRow('Description:',
+                            serviceResponse.data?.serviceDescription ?? 'N/A')
+                        : SizedBox(),
                   ],
                 ),
               ),
@@ -361,7 +396,7 @@ class ThankYouScreen extends StatelessWidget {
                 child: const Text(
                   'Our team will contact you soon to confirm your service request. Thank you for choosing Mumbai Metro Packers and Movers!',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     color: darkBlue,
                     fontFamily: 'Poppins',
                   ),

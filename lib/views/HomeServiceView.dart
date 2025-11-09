@@ -37,6 +37,7 @@ class _HomeServiceViewState extends State<HomeServiceView> {
   @override
   void initState() {
     super.initState();
+
     _fetchCategories();
     _fetchBanners();
   }
