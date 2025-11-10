@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:new_packers_application/views/VendorRegScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../lib/views/MyRequestScreen.dart';
@@ -60,7 +61,8 @@ class _HomeServiceViewState extends State<HomeServiceView> {
 
   Future<void> _fetchCategories() async {
     try {
-      final response = await http.get(Uri.parse("https://54kidsstreet.org/api/category"));
+      final response =
+          await http.get(Uri.parse("https://54kidsstreet.org/api/category"));
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
@@ -78,7 +80,8 @@ class _HomeServiceViewState extends State<HomeServiceView> {
 
   Future<void> _fetchBanners() async {
     try {
-      final response = await http.get(Uri.parse("https://54kidsstreet.org/api/banner"));
+      final response =
+          await http.get(Uri.parse("https://54kidsstreet.org/api/banner"));
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
@@ -86,7 +89,8 @@ class _HomeServiceViewState extends State<HomeServiceView> {
 
         setState(() {
           bannerImages = banners
-              .map<String>((b) => "https://54kidsstreet.org/admin_assets/banners/${b["image"]}")
+              .map<String>((b) =>
+                  "https://54kidsstreet.org/admin_assets/banners/${b["image"]}")
               .toList();
 
           if (bannerImages.isEmpty) {
@@ -129,7 +133,7 @@ class _HomeServiceViewState extends State<HomeServiceView> {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const LoginView()),
-          (route) => false,
+      (route) => false,
     );
   }
 
@@ -144,7 +148,18 @@ class _HomeServiceViewState extends State<HomeServiceView> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MyRequestScreen(customerId: widget.customerId ?? 0),
+        builder: (context) =>
+            MyRequestScreen(customerId: widget.customerId ?? 0),
+      ),
+    );
+  }
+
+  void _navigateToVendorReg() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            VendorRegScreen(),
       ),
     );
   }
@@ -220,7 +235,8 @@ class _HomeServiceViewState extends State<HomeServiceView> {
     String? bannerImg = category["category_banner_img"];
     String? description = category["category_desc"];
 
-    String? imageUrl = category["icon_image"] != null && category["icon_image"].isNotEmpty
+    String? imageUrl = category["icon_image"] != null &&
+            category["icon_image"].isNotEmpty
         ? "https://54kidsstreet.org/admin_assets/category_icon_img/${category["icon_image"]}"
         : null;
     IconData defaultIcon = Icons.category;
@@ -255,21 +271,22 @@ class _HomeServiceViewState extends State<HomeServiceView> {
           Center(
             child: imageUrl != null && imageUrl.isNotEmpty
                 ? SizedBox(
-              height: 28,
-              width: 28,
-              child: ClipRRect(
-                child: FadeInImage.assetNetwork(
-                  placeholder: 'assets/parcelwala4.jpg',
-                  image: imageUrl,
-                  fit: BoxFit.contain,
-                  alignment: Alignment.center,
-                  imageErrorBuilder: (context, error, stackTrace) {
-                    print('Failed to load image for $name: $imageUrl, Error: $error');
-                    return Icon(defaultIcon, color: mediumBlue, size: 28);
-                  },
-                ),
-              ),
-            )
+                    height: 28,
+                    width: 28,
+                    child: ClipRRect(
+                      child: FadeInImage.assetNetwork(
+                        placeholder: 'assets/parcelwala4.jpg',
+                        image: imageUrl,
+                        fit: BoxFit.contain,
+                        alignment: Alignment.center,
+                        imageErrorBuilder: (context, error, stackTrace) {
+                          print(
+                              'Failed to load image for $name: $imageUrl, Error: $error');
+                          return Icon(defaultIcon, color: mediumBlue, size: 28);
+                        },
+                      ),
+                    ),
+                  )
                 : Icon(defaultIcon, color: mediumBlue, size: 28),
           ),
           const SizedBox(height: 5),
@@ -344,49 +361,57 @@ class _HomeServiceViewState extends State<HomeServiceView> {
               child: isLoadingBanners
                   ? const Center(child: CircularProgressIndicator())
                   : PageView.builder(
-                controller: _pageController,
-                itemCount: bannerImages.length,
-                onPageChanged: (index) {
-                  setState(() {
-                    currentIndex = index;
-                  });
-                },
-                itemBuilder: (context, index) {
-                  final imagePath = bannerImages[index];
-                  final isNetwork = _isNetworkImage(imagePath);
+                      controller: _pageController,
+                      itemCount: bannerImages.length,
+                      onPageChanged: (index) {
+                        setState(() {
+                          currentIndex = index;
+                        });
+                      },
+                      itemBuilder: (context, index) {
+                        final imagePath = bannerImages[index];
+                        final isNetwork = _isNetworkImage(imagePath);
 
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: isNetwork
-                        ? FadeInImage.assetNetwork(
-                      placeholder: 'assets/parcelwala4.jpg',
-                      image: imagePath,
-                      fit: BoxFit.cover,
-                      imageErrorBuilder: (c, e, s) =>
-                          Image.asset('assets/parcelwala4.jpg', fit: BoxFit.cover),
-                    )
-                        : Image.asset(imagePath, fit: BoxFit.cover),
-                  );
-                },
-              ),
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: isNetwork
+                              ? FadeInImage.assetNetwork(
+                                  placeholder: 'assets/parcelwala4.jpg',
+                                  image: imagePath,
+                                  fit: BoxFit.cover,
+                                  imageErrorBuilder: (c, e, s) => Image.asset(
+                                      'assets/parcelwala4.jpg',
+                                      fit: BoxFit.cover),
+                                )
+                              : Image.asset(imagePath, fit: BoxFit.cover),
+                        );
+                      },
+                    ),
             ),
             const SizedBox(height: 20),
             isLoadingCategories
                 ? const Center(child: CircularProgressIndicator())
                 : Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                padding: const EdgeInsets.all(16.0),
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 2.0,
-                children: [
-                  ...categories.map((cat) => _buildCategoryButton(cat)),
-                  _buildButton('My Request', Icons.check_circle, onTap: _navigateToMyRequest),
-                  _buildButton('Call Us', Icons.call, onTap: _makePhoneCall),
-                ],
-              ),
-            ),
+                    child: GridView.count(
+                      crossAxisCount: 2,
+                      padding: const EdgeInsets.all(16.0),
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: 2.0,
+                      children: [
+                        ...categories.map((cat) => _buildCategoryButton(cat)),
+                        _buildButton('My Request', Icons.check_circle,
+                            onTap: _navigateToMyRequest),
+                        _buildButton('Call Us', Icons.call,
+                            onTap: _makePhoneCall),
+                        _buildButton(
+                          'Vendor Registration',
+                          Icons.person,
+                          onTap: _navigateToVendorReg,
+                        ),
+                      ],
+                    ),
+                  ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
