@@ -1,9 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/UserData.dart';
+import '../../views/ACServicesScreen.dart' as AppColors;
 import '../../views/HomeServiceView.dart';
 import 'OTPSuccessView.dart';
 import 'login_view.dart';
@@ -32,103 +35,156 @@ class _SignupViewState extends State<SignupView> {
   bool isLoading = false;
 
   final List<String> indianStates = [
-    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
-    'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
-    'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
-    'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
-    'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
-    'Andaman and Nicobar Islands', 'Chandigarh',
-    'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Jammu and Kashmir',
-    'Ladakh', 'Lakshadweep', 'Puducherry'
+    'Andhra Pradesh',
+    'Arunachal Pradesh',
+    'Assam',
+    'Bihar',
+    'Chhattisgarh',
+    'Goa',
+    'Gujarat',
+    'Haryana',
+    'Himachal Pradesh',
+    'Jharkhand',
+    'Karnataka',
+    'Kerala',
+    'Madhya Pradesh',
+    'Maharashtra',
+    'Manipur',
+    'Meghalaya',
+    'Mizoram',
+    'Nagaland',
+    'Odisha',
+    'Punjab',
+    'Rajasthan',
+    'Sikkim',
+    'Tamil Nadu',
+    'Telangana',
+    'Tripura',
+    'Uttar Pradesh',
+    'Uttarakhand',
+    'West Bengal',
+    'Andaman and Nicobar Islands',
+    'Chandigarh',
+    'Dadra and Nagar Haveli and Daman and Diu',
+    'Delhi',
+    'Jammu and Kashmir',
+    'Ladakh',
+    'Lakshadweep',
+    'Puducherry'
   ];
 
   bool isValidEmail(String email) {
-    final RegExp emailRegex = RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$');
+    final RegExp emailRegex =
+        RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$');
     return emailRegex.hasMatch(email);
   }
 
+  _showSnack({required String text, required bool isError}) {
+    return ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: isError ? Colors.red : Colors.green,
+        content: Text(
+          text,
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.normal,
+            color: AppColors.whiteColor,
+            backgroundColor: isError ? Colors.red : Colors.green,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<bool> createUser() async {
+    final url = 'http://54kidsstreet.org/api/customers';
+    developer.log('[SignupView] 🌐 Creating User URL: $url',
+        name: 'flutter', level: 800);
+
+    // final client = http.Client();
+    // final request = http.Request('POST', Uri.parse(url))
+    //   ..headers.addAll({
+    //     'Content-Type': 'application/x-www-form-urlencoded',
+    //   })
+    //   ..bodyFields = {
+    //     'customer_name': nameController.text.trim(),
+    //     'email': emailController.text.trim(),
+    //     'pincode': pincodeController.text.trim(),
+    //     'city': cityController.text.trim(),
+    //     'state': selectedState ?? '',
+    //     'mobile_no': widget.mobileNumber,
+    //   };
+    //
+    // final response = await client.send(request).then((response) async {
+    //   return await http.Response.fromStream(response);
+    // });
+
+    final Map<String, dynamic> body = {
+      'customer_name': nameController.text.trim(),
+      'email': emailController.text.trim(),
+      'pincode': pincodeController.text.trim(),
+      'city': cityController.text.trim(),
+      'state': selectedState ?? '',
+      'mobile_no': widget.mobileNumber,
+    };
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    developer.log(
+        '[SignupView] 📊 Create User Response Status: ${response.statusCode}',
+        name: 'flutter',
+        level: 800);
+    developer.log('[SignupView] 📝 Create User Response Body: ${response.body}',
+        name: 'flutter', level: 800);
+    developer.log(
+        '[SignupView] 📍 Redirect Location: ${response.headers['location'] ?? 'N/A'}',
+        name: 'flutter',
+        level: 800);
+    developer.log('[SignupView] 📋 Full Headers: ${response.headers}',
+        name: 'flutter', level: 800);
+
     try {
-      final url = 'http://54kidsstreet.org/api/customers';
-      developer.log('[SignupView] 🌐 Creating User URL: $url', name: 'flutter', level: 800);
-
-      final client = http.Client();
-      final request = http.Request('POST', Uri.parse(url))
-        ..headers.addAll({
-          'Content-Type': 'application/x-www-form-urlencoded',
-        })
-        ..bodyFields = {
-          'customer_name': nameController.text.trim(),
-          'email': emailController.text.trim(),
-          'pincode': pincodeController.text.trim(),
-          'city': cityController.text.trim(),
-          'state': selectedState ?? '',
-          'mobile_no': widget.mobileNumber,
-        };
-
-      final response = await client.send(request).then((response) async {
-        return await http.Response.fromStream(response);
-      });
-
-      developer.log('[SignupView] 📊 Create User Response Status: ${response.statusCode}',
-          name: 'flutter', level: 800);
-      developer.log('[SignupView] 📝 Create User Response Body: ${response.body}',
-          name: 'flutter', level: 800);
-      developer.log('[SignupView] 📍 Redirect Location: ${response.headers['location'] ?? 'N/A'}',
-          name: 'flutter', level: 800);
-      developer.log('[SignupView] 📋 Full Headers: ${response.headers}',
-          name: 'flutter', level: 800);
-
+      final responseData = json.decode(response.body);
       if (response.statusCode == 200 || response.statusCode == 201) {
-        if (response.body.isNotEmpty) {
-          try {
-            final responseData = json.decode(response.body);
-            developer.log('[SignupView] ✅ Parsed Response: $responseData',
-                name: 'flutter', level: 800);
+        developer.log('[SignupView] ✅ Parsed Response: $responseData',
+            name: 'flutter', level: 800);
 
-            if (responseData is Map && responseData.containsKey('data')) {
-              final data = responseData['data'];
-              if (data is Map && data['id'] != null) {
-                // Save login state and customerId
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setBool('isLoggedIn', true);
-                await prefs.setString('customerId', data['id'].toString());
-                // Save UserData
-                final userData = UserData(
-                  customerName: nameController.text.trim(),
-                  email: emailController.text.trim(),
-                  pincode: pincodeController.text.trim(),
-                  city: cityController.text.trim(),
-                  state: selectedState ?? '',
-                  mobileNo: widget.mobileNumber,
-                );
-                await prefs.setString('userData', jsonEncode(userData.toJson()));
-                developer.log('[SignupView] ✅ User creation successful',
-                    name: 'flutter', level: 800);
-                return true;
-              }
-            }
-            developer.log('[SignupView] ❌ Response does not indicate success: $responseData',
-                name: 'flutter', level: 800);
-            return false;
-          } catch (e) {
-            developer.log('[SignupView] ⚠️ JSON parsing error: $e',
-                name: 'flutter', level: 800);
-            return false;
+        if (responseData is Map && responseData.containsKey('data')) {
+          final data = responseData['data'];
+          if (data is Map && data['id'] != null) {
+            // Save login state and customerId
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('isLoggedIn', true);
+            await prefs.setString('customerId', data['id'].toString());
+            // Save UserData
+            final userData = UserData(
+              customerName: nameController.text.trim(),
+              email: emailController.text.trim(),
+              pincode: pincodeController.text.trim(),
+              city: cityController.text.trim(),
+              state: selectedState ?? '',
+              mobileNo: widget.mobileNumber,
+            );
+            await prefs.setString('userData', jsonEncode(userData.toJson()));
+            return true;
           }
         } else {
-          developer.log('[SignupView] ❌ Empty response body for user creation',
-              name: 'flutter', level: 800);
-          return false;
+          log('[SignupView] ❌ Response does not indicate success: $responseData');
         }
+        return false;
       } else {
-        developer.log('[SignupView] ❌ User creation failed with status: ${response.statusCode} - ${response.body}',
-            name: 'flutter', level: 800);
+        _showSnack(text: responseData['message'], isError: true);
         return false;
       }
     } catch (e) {
-      developer.log('[SignupView] 💥 Error creating user: $e',
-          name: 'flutter', level: 800);
+      log('[SignupView] ⚠️ JSON parsing error: $e');
       return false;
     }
   }
@@ -156,16 +212,17 @@ class _SignupViewState extends State<SignupView> {
           mobileNo: widget.mobileNumber,
         );
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HomeServiceView(userData: userData),
-          ),
-        );
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (context) => HomeServiceView(userData: userData),
+        //   ),
+        // );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Failed to create account. Please contact support at support@54kidsstreet.org.'),
+            content: Text(
+                'Failed to create account. Please contact support at support@54kidsstreet.org.'),
             backgroundColor: Colors.red,
           ),
         );
@@ -200,8 +257,7 @@ class _SignupViewState extends State<SignupView> {
                     labelText: 'Name*',
                     border: OutlineInputBorder(),
                   ),
-                  validator: (value) =>
-                  value == null || value.trim().isEmpty
+                  validator: (value) => value == null || value.trim().isEmpty
                       ? 'Please enter your name'
                       : null,
                 ),
@@ -230,9 +286,9 @@ class _SignupViewState extends State<SignupView> {
                   ),
                   keyboardType: TextInputType.number,
                   validator: (value) =>
-                  value == null || value.trim().isEmpty || value.length != 6
-                      ? 'Please enter a valid 6-digit pincode'
-                      : null,
+                      value == null || value.trim().isEmpty || value.length != 6
+                          ? 'Please enter a valid 6-digit pincode'
+                          : null,
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
@@ -241,8 +297,7 @@ class _SignupViewState extends State<SignupView> {
                     labelText: 'City*',
                     border: OutlineInputBorder(),
                   ),
-                  validator: (value) =>
-                  value == null || value.trim().isEmpty
+                  validator: (value) => value == null || value.trim().isEmpty
                       ? 'Please enter your city'
                       : null,
                 ),
@@ -256,12 +311,12 @@ class _SignupViewState extends State<SignupView> {
                   isExpanded: true,
                   items: indianStates
                       .map((state) => DropdownMenuItem(
-                    value: state,
-                    child: Text(
-                      state,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ))
+                            value: state,
+                            child: Text(
+                              state,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ))
                       .toList(),
                   onChanged: (value) {
                     setState(() {
@@ -269,7 +324,7 @@ class _SignupViewState extends State<SignupView> {
                     });
                   },
                   validator: (value) =>
-                  value == null ? 'Please select your state' : null,
+                      value == null ? 'Please select your state' : null,
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
@@ -280,13 +335,13 @@ class _SignupViewState extends State<SignupView> {
                   ),
                   child: isLoading
                       ? const CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  )
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        )
                       : const Text(
-                    'Signup',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                          'Signup',
+                          style: TextStyle(color: Colors.white),
+                        ),
                 ),
                 const SizedBox(height: 10),
                 Row(
@@ -300,7 +355,7 @@ class _SignupViewState extends State<SignupView> {
                           MaterialPageRoute(
                             builder: (context) => const LoginView(),
                           ),
-                              (route) => false,
+                          (route) => false,
                         );
                       },
                       child: const Text(

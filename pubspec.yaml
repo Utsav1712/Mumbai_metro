@@ -44,6 +44,7 @@ flutter:
     - assets/parcelwala9.jpg
     - assets/applogowithminsize.jpg
     - assets/applogo2.jpg
+    - assets/delivery-truck.png
 
 # flutter_launcher_icons config
 flutter_icons:

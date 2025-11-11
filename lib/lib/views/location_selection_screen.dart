@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
@@ -124,6 +125,300 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
       Fluttertoast.showToast(msg: "Location selected successfully");
     } else {
       Fluttertoast.showToast(msg: "No location selected");
+    }
+  }
+
+  //New for search direct
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  bool _isSearching = false;
+  List<SearchResult> _searchSuggestions = [];
+  bool _showSuggestions = false;
+  LatLng _centerPosition = const LatLng(19.0760, 72.8777);
+
+  GoogleMapController? _mapController;
+
+  Future<void> _searchLocationSuggestions(String query) async {
+    if (query.trim().isEmpty) {
+      setState(() {
+        _searchSuggestions = [];
+        _showSuggestions = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isSearching = true;
+      _showSuggestions = true;
+    });
+
+    try {
+      List<SearchResult> allSuggestions = [];
+      Set<String> uniqueLocations = {}; // To avoid duplicates
+
+      // Generate multiple search variations to get more results
+      List<String> searchQueries = [
+        query,
+        "$query, India",
+        "$query, Maharashtra",
+        "$query Railway Station",
+        "$query Airport",
+        "$query Beach",
+        "$query Market",
+        "$query Mall",
+        "Mumbai $query",
+        "Thane $query",
+        "Navi Mumbai $query",
+      ];
+
+      if (kDebugMode) {
+        print("Searching for: $query");
+      }
+
+      // Search with multiple queries
+      for (String searchQuery in searchQueries) {
+        try {
+          List<Location> locations = await locationFromAddress(searchQuery);
+
+          if (kDebugMode) {
+            print("Found ${locations.length} locations for: $searchQuery");
+          }
+
+          // Process each location
+          for (Location loc in locations) {
+            try {
+              // Get detailed information
+              List<Placemark> placemarks = await placemarkFromCoordinates(
+                loc.latitude,
+                loc.longitude,
+                localeIdentifier: "en_IN",
+              );
+
+              if (placemarks.isNotEmpty) {
+                Placemark place = placemarks[0];
+
+                // Build title
+                String title = "";
+                if (place.name != null && place.name!.isNotEmpty) {
+                  title = place.name!;
+                } else if (place.locality != null &&
+                    place.locality!.isNotEmpty) {
+                  title = place.locality!;
+                } else if (place.subLocality != null &&
+                    place.subLocality!.isNotEmpty) {
+                  title = place.subLocality!;
+                } else if (place.administrativeArea != null &&
+                    place.administrativeArea!.isNotEmpty) {
+                  title = place.administrativeArea!;
+                }
+
+                // Build subtitle
+                List<String> subtitleParts = [];
+                if (place.subLocality != null &&
+                    place.subLocality!.isNotEmpty &&
+                    place.subLocality != title) {
+                  subtitleParts.add(place.subLocality!);
+                }
+                if (place.locality != null &&
+                    place.locality!.isNotEmpty &&
+                    place.locality != title) {
+                  subtitleParts.add(place.locality!);
+                }
+                if (place.administrativeArea != null &&
+                    place.administrativeArea!.isNotEmpty &&
+                    place.administrativeArea != title) {
+                  subtitleParts.add(place.administrativeArea!);
+                }
+                if (place.country != null && place.country!.isNotEmpty) {
+                  subtitleParts.add(place.country!);
+                }
+
+                String subtitle = subtitleParts.join(", ");
+
+                // Create unique key to avoid duplicates
+                String uniqueKey =
+                    "${loc.latitude.toStringAsFixed(4)},${loc.longitude.toStringAsFixed(4)}-${title.toLowerCase()}";
+
+                if (!uniqueLocations.contains(uniqueKey) && title.isNotEmpty) {
+                  uniqueLocations.add(uniqueKey);
+                  allSuggestions.add(SearchResult(
+                    title: title,
+                    subtitle: subtitle.isNotEmpty ? subtitle : "India",
+                    location: LatLng(loc.latitude, loc.longitude),
+                  ));
+
+                  if (kDebugMode) {
+                    print("Added suggestion: $title - $subtitle");
+                  }
+                }
+              }
+            } catch (e) {
+              if (kDebugMode) {
+                print("Error processing location: $e");
+              }
+            }
+
+            // Limit results to avoid too many API calls
+            if (allSuggestions.length >= 15) break;
+          }
+
+          if (allSuggestions.length >= 15) break;
+        } catch (e) {
+          if (kDebugMode) {
+            print("Error searching '$searchQuery': $e");
+          }
+          continue;
+        }
+
+        // Small delay to avoid rate limiting
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+
+      // Sort by relevance (locations that contain the search query first)
+      allSuggestions.sort((a, b) {
+        bool aContains = a.title.toLowerCase().contains(query.toLowerCase());
+        bool bContains = b.title.toLowerCase().contains(query.toLowerCase());
+        if (aContains && !bContains) return -1;
+        if (!aContains && bContains) return 1;
+        return 0;
+      });
+
+      // Limit to top 10 results
+      List<SearchResult> finalSuggestions = allSuggestions.take(10).toList();
+
+      if (kDebugMode) {
+        print("Total unique suggestions: ${finalSuggestions.length}");
+      }
+
+      setState(() {
+        _searchSuggestions = finalSuggestions;
+        _isSearching = false;
+      });
+
+      if (finalSuggestions.isEmpty) {
+        Fluttertoast.showToast(msg: "No locations found for '$query'");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Search error: $e");
+      }
+      setState(() {
+        _searchSuggestions = [];
+        _isSearching = false;
+      });
+      Fluttertoast.showToast(msg: "Error searching location");
+    }
+  }
+
+  void _selectSearchResult(SearchResult result) {
+    setState(() {
+      _centerPosition = result.location;
+      _showSuggestions = false;
+      _searchController.text = result.title;
+    });
+
+    _searchFocusNode.unfocus();
+
+    if (_mapController != null) {
+      _mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: result.location, zoom: 18),
+        ),
+      );
+    }
+
+    _getAddressFromCoordinates(result.location);
+  }
+
+  String _currentAddress = "Loading...";
+  String _detailedAddress = "";
+  bool _isLoadingAddress = false;
+
+
+  Future<void> _getAddressFromCoordinates(LatLng position) async {
+    if (_isLoadingAddress) return;
+
+    setState(() {
+      _isLoadingAddress = true;
+      _currentAddress = "Getting address...";
+    });
+
+    try {
+      if (kDebugMode) {
+        print(
+            "Getting address for: ${position.latitude}, ${position.longitude}");
+      }
+
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+        localeIdentifier: "en_IN",
+      );
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+
+        if (kDebugMode) {
+          print("Address found: $place");
+        }
+
+        // Build main address (like "C/209, Raheja Vihar Circular Road")
+        List<String> mainAddressParts = [];
+        if (place.name != null && place.name!.isNotEmpty) {
+          mainAddressParts.add(place.name!);
+        }
+        if (place.street != null &&
+            place.street!.isNotEmpty &&
+            place.street != place.name) {
+          mainAddressParts.add(place.street!);
+        }
+        if (place.subLocality != null && place.subLocality!.isNotEmpty) {
+          mainAddressParts.add(place.subLocality!);
+        }
+
+        String mainAddress = mainAddressParts.isNotEmpty
+            ? mainAddressParts.join(", ")
+            : (place.locality ?? "Unknown location");
+
+        // Build detailed address (like "Kandivali East, Mumbai, Maharashtra 400101")
+        List<String> detailedParts = [];
+        if (place.locality != null && place.locality!.isNotEmpty) {
+          detailedParts.add(place.locality!);
+        }
+        if (place.administrativeArea != null &&
+            place.administrativeArea!.isNotEmpty) {
+          detailedParts.add(place.administrativeArea!);
+        }
+        if (place.postalCode != null && place.postalCode!.isNotEmpty) {
+          detailedParts.add(place.postalCode!);
+        }
+
+        String detailed =
+        detailedParts.isNotEmpty ? detailedParts.join(", ") : "";
+
+        setState(() {
+          _currentAddress = mainAddress;
+          _detailedAddress = detailed;
+          _isLoadingAddress = false;
+        });
+      } else {
+        setState(() {
+          _currentAddress = "Unknown location";
+          _detailedAddress =
+          "Lat: ${position.latitude.toStringAsFixed(6)}, Lng: ${position.longitude.toStringAsFixed(6)}";
+          _isLoadingAddress = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error getting address: $e");
+      }
+      setState(() {
+        _currentAddress = "Unknown location";
+        _detailedAddress =
+        "Lat: ${position.latitude.toStringAsFixed(6)}, Lng: ${position.longitude.toStringAsFixed(6)}";
+        _isLoadingAddress = false;
+      });
     }
   }
 
@@ -280,7 +575,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   const Text('Locality'),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 10),
                   TextField(
                     controller: _sourceLocalityController,
                     readOnly: true,
@@ -297,6 +592,157 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                           const Icon(Icons.location_on, color: mediumBlue),
                     ),
                   ),
+                  // Container(
+                  //   height: 50,
+                  //   decoration: BoxDecoration(
+                  //     color: Colors.white,
+                  //     borderRadius: BorderRadius.circular(25),
+                  //     boxShadow: [
+                  //       BoxShadow(
+                  //         color: Colors.black.withOpacity(0.2),
+                  //         blurRadius: 8,
+                  //         offset: const Offset(0, 2),
+                  //       ),
+                  //     ],
+                  //   ),
+                  //   child: Row(
+                  //     children: [
+                  //       Expanded(
+                  //         child: TextField(
+                  //           controller: _searchController,
+                  //           focusNode: _searchFocusNode,
+                  //           decoration: const InputDecoration(
+                  //             hintText: "Search here",
+                  //             border: InputBorder.none,
+                  //             contentPadding:
+                  //             EdgeInsets.symmetric(vertical: 12,horizontal: 10),
+                  //           ),
+                  //           onChanged: (value) {
+                  //             // Debounce search to avoid too many calls
+                  //             Future.delayed(
+                  //                 const Duration(milliseconds: 500), () {
+                  //               if (_searchController.text == value) {
+                  //                 _searchLocationSuggestions(value);
+                  //               }
+                  //             });
+                  //           },
+                  //           onSubmitted: (value) {
+                  //             if (_searchSuggestions.isNotEmpty) {
+                  //               _selectSearchResult(
+                  //                   _searchSuggestions.first);
+                  //             } else {
+                  //               _searchLocationSuggestions(value);
+                  //             }
+                  //           },
+                  //         ),
+                  //       ),
+                  //       if (_searchController.text.isNotEmpty)
+                  //         IconButton(
+                  //           icon: const Icon(Icons.clear,
+                  //               color: Colors.black54),
+                  //           onPressed: () {
+                  //             _searchController.clear();
+                  //             setState(() {
+                  //               _searchSuggestions = [];
+                  //               _showSuggestions = false;
+                  //             });
+                  //           },
+                  //         ),
+                  //       if (_isSearching)
+                  //         const Padding(
+                  //           padding: EdgeInsets.all(12.0),
+                  //           child: SizedBox(
+                  //             width: 20,
+                  //             height: 20,
+                  //             child: CircularProgressIndicator(
+                  //                 strokeWidth: 2),
+                  //           ),
+                  //         )
+                  //       else
+                  //         IconButton(
+                  //           icon: const Icon(Icons.search,
+                  //               color: Colors.black54),
+                  //           onPressed: () {
+                  //             if (_searchSuggestions.isNotEmpty) {
+                  //               _selectSearchResult(
+                  //                   _searchSuggestions.first);
+                  //             } else {
+                  //               _searchLocationSuggestions(
+                  //                   _searchController.text);
+                  //             }
+                  //           },
+                  //         ),
+                  //     ],
+                  //   ),
+                  // ),
+                  // if (_showSuggestions && _searchSuggestions.isNotEmpty)
+                  //   Container(
+                  //     margin: const EdgeInsets.only(top: 8),
+                  //     constraints: BoxConstraints(
+                  //       maxHeight:
+                  //       MediaQuery.of(context).size.height * 0.4,
+                  //     ),
+                  //     decoration: BoxDecoration(
+                  //       color: Colors.white,
+                  //       borderRadius: BorderRadius.circular(12),
+                  //       boxShadow: [
+                  //         BoxShadow(
+                  //           color: Colors.black.withOpacity(0.2),
+                  //           blurRadius: 8,
+                  //           offset: const Offset(0, 2),
+                  //         ),
+                  //       ],
+                  //     ),
+                  //     child: ListView.separated(
+                  //       shrinkWrap: true,
+                  //       padding: const EdgeInsets.symmetric(vertical: 8),
+                  //       itemCount: _searchSuggestions.length,
+                  //       separatorBuilder: (context, index) => Divider(
+                  //         height: 1,
+                  //         color: Colors.grey[200],
+                  //       ),
+                  //       itemBuilder: (context, index) {
+                  //         SearchResult result = _searchSuggestions[index];
+                  //         return ListTile(
+                  //           leading: Container(
+                  //             width: 40,
+                  //             height: 40,
+                  //             decoration: BoxDecoration(
+                  //               color: Colors.grey[100],
+                  //               shape: BoxShape.circle,
+                  //             ),
+                  //             child: Icon(
+                  //               Icons.location_on,
+                  //               color: mediumBlue,
+                  //               size: 20,
+                  //             ),
+                  //           ),
+                  //           title: Text(
+                  //             result.title,
+                  //             style: const TextStyle(
+                  //               fontSize: 16,
+                  //               fontWeight: FontWeight.w500,
+                  //               color: Colors.black87,
+                  //             ),
+                  //             maxLines: 1,
+                  //             overflow: TextOverflow.ellipsis,
+                  //           ),
+                  //           subtitle: result.subtitle.isNotEmpty
+                  //               ? Text(
+                  //             result.subtitle,
+                  //             style: TextStyle(
+                  //               fontSize: 14,
+                  //               color: Colors.grey[600],
+                  //             ),
+                  //             maxLines: 1,
+                  //             overflow: TextOverflow.ellipsis,
+                  //           )
+                  //               : null,
+                  //           onTap: () => _selectSearchResult(result),
+                  //         );
+                  //       },
+                  //     ),
+                  //   ),
                   const SizedBox(height: 8),
                   CheckboxListTile(
                     title: const Text('Normal Lift Available'),

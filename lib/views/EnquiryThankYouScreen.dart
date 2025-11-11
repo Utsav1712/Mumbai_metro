@@ -2,6 +2,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:new_packers_application/lib/constant/app_color.dart';
 import 'dart:convert';
 import '../lib/constant/app_formatter.dart';
 import '../lib/payment_service/payment_service.dart';
@@ -85,9 +86,10 @@ class _EnquiryBookingConfirmationWithAmountState
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+
               Container(
-                height: 120,
-                width: 120,
+                height: 50,
+                width: 50,
                 decoration: BoxDecoration(
                   color: Colors.green,
                   borderRadius: BorderRadius.circular(60),
@@ -98,7 +100,9 @@ class _EnquiryBookingConfirmationWithAmountState
                   size: 50,
                 ),
               ),
-              const SizedBox(height: 30),
+              SizedBox(
+                height: 20,
+              ),
               const Text(
                 'Booking Confirmation',
                 style: TextStyle(
@@ -109,35 +113,82 @@ class _EnquiryBookingConfirmationWithAmountState
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 10),
               Text(
-                'Your Estimate Amount: ${double.parse((widget.enquiryResponse.data?.amount ?? 0).toString()).toStringAsFixed(0)}',
+                'Your Estimate',
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 15,
                   color: darkBlue,
+                  fontWeight: FontWeight.bold,
                   fontFamily: 'Poppins',
                 ),
-                textAlign: TextAlign.center,
+                textAlign: TextAlign.start,
               ),
-              const SizedBox(height: 30),
-              Text(
-                'Includes door to door delivery with packing,transportation,loading & unloading.',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: darkBlue,
-                  fontFamily: 'Poppins',
+              Center(
+                child: Text(
+                  '\u20B9${double.parse((widget.enquiryResponse.data?.amount ?? 0).toString()).toStringAsFixed(0)}',
+                  style: const TextStyle(
+                      fontSize: 30,
+                      color: darkBlue,
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 30),
-              Text(
-                'Book your slot by paying only 10% of total estimate : ${calculatePercentage(double.parse((widget.enquiryResponse.data?.amount ?? 0).toString()))}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: darkBlue,
-                  fontFamily: 'Poppins',
-                ),
-                textAlign: TextAlign.center,
+
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Image.asset(
+                    'assets/delivery-truck.png',
+                    height: 50,
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Includes door to door delivery with packing,transportation,loading & unloading.',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: darkBlue,
+                        fontWeight: FontWeight.w400,
+                        fontFamily: 'Poppins',
+                      ),
+                      textAlign: TextAlign.start,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 15),
+              Divider(
+                color: AppColor.lightBlue,
+              ),
+              const SizedBox(height: 15),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Book your slot!',
+                    style: const TextStyle(
+                        fontSize: 17,
+                        color: darkBlue,
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.start,
+                  ),
+                  Text(
+                    'Pay only 10% advance : \u20B9 ${calculatePercentage(double.parse((widget.enquiryResponse.data?.amount ?? 0).toString()))}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: darkBlue,
+                      fontFamily: 'Poppins',
+                    ),
+                    textAlign: TextAlign.start,
+                  ),
+                ],
               ),
               SizedBox(
                 height: 40,
@@ -157,7 +208,7 @@ class _EnquiryBookingConfirmationWithAmountState
                 children: [
                   Expanded(
                     child: SizedBox(
-                      height: 50,
+                      height: 45,
                       child: ElevatedButton(
                         onPressed: () {
                           Navigator.of(context).pushAndRemoveUntil(
@@ -186,7 +237,7 @@ class _EnquiryBookingConfirmationWithAmountState
                   ),
                   Expanded(
                     child: SizedBox(
-                      height: 50,
+                      height: 45,
                       child: ElevatedButton(
                         onPressed: isPaymentLoading ? null : _payButtonSubmit,
                         style: ElevatedButton.styleFrom(
