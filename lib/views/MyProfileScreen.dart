@@ -120,8 +120,8 @@ class _MyProfileScreenState extends State<MyProfileScreen> {
                     SizedBox(
                       height: 50,
                     ),
-                    detailTile(
-                        "Customer ID", customerModel!.data.id.toString()),
+                    // detailTile(
+                    //     "Customer ID", customerModel!.data.id.toString()),
                     detailTile("Name", customerModel!.data.customerName),
                     detailTile("Email", customerModel!.data.email),
                     detailTile("Mobile", customerModel!.data.mobileNo),
