@@ -399,6 +399,10 @@ class EnquiryThankYouScreen extends StatelessWidget {
                     ),
                     _buildDetailRow('Total KM: ',
                         '${enquiryResponse.data?.distance ?? ''}'),
+                    if ((enquiryResponse.data?.distance ?? 0) != 0) ...[
+                      _buildDetailRow(
+                          'Total CFT: ', (enquiryResponse.totalCft ?? 0).toString()),
+                    ]
                   ],
                 ),
               ),
@@ -463,7 +467,7 @@ class EnquiryThankYouScreen extends StatelessWidget {
                       height: 50,
                       child: ElevatedButton(
                         onPressed: () {
-                         Navigator.pop(context);
+                          Navigator.pop(context);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: mediumBlue,
@@ -484,7 +488,9 @@ class EnquiryThankYouScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10,),
+                  SizedBox(
+                    width: 10,
+                  ),
                   Expanded(
                     child: SizedBox(
                       width: double.infinity,

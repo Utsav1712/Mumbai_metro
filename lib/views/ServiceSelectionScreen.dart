@@ -178,6 +178,11 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen> {
         request.fields['drop_longitude'] =
             widget.shiftData!.destinationCoordinates!.longitude.toString();
       }
+      if (widget.shiftData!.floorDestination != null) {
+        request.fields['destination_floor_number'] =
+            widget.shiftData!.floorDestination.toString();
+      }
+
 
       request.headers.addAll({
         'Accept': 'application/json',

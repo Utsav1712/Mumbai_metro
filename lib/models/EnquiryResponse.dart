@@ -61,18 +61,21 @@ class EnquiryData {
 class EnquiryResponse {
   final bool status;
   final String msg;
+  final int totalCft;
   final EnquiryData? data;
 
   EnquiryResponse({
     required this.status,
     required this.msg,
     this.data,
+    required this.totalCft,
   });
 
   factory EnquiryResponse.fromJson(Map<String, dynamic> json) {
     return EnquiryResponse(
       status: json['status'] ?? false,
       msg: json['msg'] ?? '',
+      totalCft: json['total_cft'] ?? 0,
       data: json['data'] != null
           ? EnquiryData.fromJson(json['data'])
           : null,

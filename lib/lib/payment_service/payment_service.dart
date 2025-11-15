@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -80,6 +81,7 @@ class PaymentService {
     int amount,
     String orderNumber,
   ) async {
+    log('----Order number------->>${orderNumber}');
     await callSuccessApi(
       context: context,
       amount: amount,
@@ -142,12 +144,11 @@ class PaymentService {
       debugPrint('📥 Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        await callWebhook(context: context, response: paymentResponse);
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-              builder: (context) => const HomeServiceView()),
-              (Route<dynamic> route) => false,
+        // final data = jsonDecode(response.body);
+        await callWebhook(
+          context: context,
+          response: paymentResponse,
+          orderId: orderNumber,
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -155,17 +156,19 @@ class PaymentService {
         );
       }
     } catch (e) {
-      debugPrint('❌ Payment initiation error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error initiating payment: $e')),
       );
+      debugPrint('❌ Payment initiation error: $e');
     }
   }
 
   Future<void> callWebhook({
     required BuildContext context,
     required PaymentSuccessResponse response,
+    required String orderId,
   }) async {
+    log('Webhook order id---->>${orderId}');
     final webhookUrl =
         Uri.parse('https://54kidsstreet.org/api/payment/webhook');
     // Create the payload similar to your backend format
@@ -174,7 +177,7 @@ class PaymentService {
         "payment": {
           "entity": {
             "id": response.paymentId ?? '',
-            "order_id": response.orderId ?? '',
+            "order_id": orderId ?? '',
             "status": "captured",
             "method": "upi"
           }
@@ -194,7 +197,17 @@ class PaymentService {
 
       debugPrint('📥 Webhook Response Code: ${webhookResponse.statusCode}');
       debugPrint('📥 Webhook Response Body: ${webhookResponse.body}');
+
+      if(webhookResponse.statusCode == 200){
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const HomeServiceView()),
+              (Route<dynamic> route) => false,
+        );
+      }
     } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error initiating payment: ${e.toString()}')),
+      );
       debugPrint('❌ Error sending webhook: $e');
     }
   }

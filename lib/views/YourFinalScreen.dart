@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -126,6 +128,8 @@ class _YourFinalScreenState extends State<YourFinalScreen> {
       });
 
       if (response != null && response.status) {
+
+        log('Total Payment--->>${response.data?.amount??0}');
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

@@ -428,6 +428,27 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                           Row(
                             children: [
                               Text(
+                                "Total CFT: ",
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    color: darkBlue,
+                                    fontFamily: 'Poppins'),
+                              ),
+                              Text(
+                                "${enquiry["total_cft"]}",
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                    fontFamily: 'Poppins'),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: 3,
+                          ),
+                          Row(
+                            children: [
+                              Text(
                                 "Total Distance: ",
                                 style: const TextStyle(
                                     fontSize: 14,
@@ -480,7 +501,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                     fontFamily: 'Poppins'),
                               ),
                               Text(
-                                "\u20B9${calculatePercentage(double.parse((enquiry["total_amount"] ?? 0).toString()))}",
+                                "\u20B9${calculatePercentage(double.parse((enquiry["total_amount"] ?? 0).toString()))}${enquiry['total_paid'] != 0 ? '(Paid)' : '(Unpaid)'}",
                                 style: const TextStyle(
                                     fontSize: 14,
                                     color: Colors.black54,
@@ -530,36 +551,41 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                             SizedBox(
                               height: 10,
                             ),
-                            SizedBox(
-                              height: 40,
-                              width: MediaQuery.of(context).size.width,
-                              child: ElevatedButton(
-                                onPressed: () => isPaymentLoading
-                                    ? null
-                                    : _payButtonSubmit(
-                                        orderNumber: (enquiry["order_no"] ?? '')
-                                            .toString(),
-                                        amount: calculatePercentage(
-                                            double.parse(
-                                                (enquiry["total_amount"] ?? 0)
-                                                    .toString()))),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: mediumBlue,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25),
+                            enquiry['total_paid'] != 0
+                                ? SizedBox()
+                                : SizedBox(
+                                    height: 40,
+                                    width: MediaQuery.of(context).size.width,
+                                    child: ElevatedButton(
+                                      onPressed: () => isPaymentLoading
+                                          ? null
+                                          : _payButtonSubmit(
+                                              orderNumber:
+                                                  (enquiry["order_no"] ?? '')
+                                                      .toString(),
+                                              amount: calculatePercentage(
+                                                  double.parse((enquiry[
+                                                              "total_amount"] ??
+                                                          0)
+                                                      .toString()))),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: mediumBlue,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(25),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Book Now',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: whiteColor,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                child: const Text(
-                                  'Book Now',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: whiteColor,
-                                    fontFamily: 'Poppins',
-                                  ),
-                                ),
-                              ),
-                            ),
                           ],
                         ],
                       ),

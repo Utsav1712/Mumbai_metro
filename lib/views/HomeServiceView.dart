@@ -38,21 +38,25 @@ class _HomeServiceViewState extends State<HomeServiceView> {
 
   @override
   void initState() {
+    fetchAllData();
     super.initState();
-    fetchData();
-    _fetchCategories();
-    _fetchBanners();
+  }
+
+  fetchAllData() async {
+    await fetchData();
+    await _fetchCategories();
+    await _fetchBanners();
   }
 
   CustomerModel? customerModel;
 
-  bool isLoading = false;
+  bool isLoading = true;
 
-  fetchData() async {
-    setState(() {
-      isLoading = true;
-    });
+  Future<void> fetchData() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
       final String baseUrl = "http://54kidsstreet.org";
 
       final prefs = await SharedPreferences.getInstance();
@@ -73,10 +77,11 @@ class _HomeServiceViewState extends State<HomeServiceView> {
       }
     } catch (e) {
       log("❌ Error fetching customer: $e");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
-    setState(() {
-      isLoading = false;
-    });
   }
 
   void _startBannerTimer() {
@@ -383,15 +388,13 @@ class _HomeServiceViewState extends State<HomeServiceView> {
         ],
       ),
       body: isLoading
-          ? Expanded(
-            child: Container(
-              color: Colors.white,
-              child: Center(
-                child: SizedBox(
-                    height: 50,
-                    width: 50,
-                    child: CircularProgressIndicator(),
-                  ),
+          ? Container(
+            color: Colors.white,
+            child: Center(
+              child: SizedBox(
+                height: 50,
+                width: 50,
+                child: CircularProgressIndicator(),
               ),
             ),
           )
