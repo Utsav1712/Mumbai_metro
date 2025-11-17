@@ -158,6 +158,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                   itemBuilder: (context, index) {
                     final enquiry = enquiries[index];
                     final productsItem = enquiry["products_item"];
+                    List<dynamic> paymentDetails = enquiry["payments_detail"];
 
                     List<dynamic> products = [];
                     try {
@@ -487,29 +488,33 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                               ),
                             ],
                           ),
-                          SizedBox(
-                            height: 3,
-                          ),
-                          Row(
-                            children: [
-                              Text(
-                                "Advance Amount: ",
-                                style: const TextStyle(
-                                    fontSize: 14,
-                                    color: darkBlue,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'Poppins'),
-                              ),
-                              Text(
-                                "\u20B9${calculatePercentage(double.parse((enquiry["total_amount"] ?? 0).toString()))}${enquiry['total_paid'] != 0 ? '(Paid)' : '(Unpaid)'}",
-                                style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black54,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'Poppins'),
-                              ),
-                            ],
-                          ),
+                          if (paymentDetails.isNotEmpty) ...[
+                            SizedBox(
+                              height: 3,
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  "10% Paid Advance Amount: ",
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      color: darkBlue,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Poppins'),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    "\u20B9${(paymentDetails[0]['amount'] ?? 0).toString()}(Paid)",
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.black54,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Poppins'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                           const SizedBox(height: 12),
 
                           // Products
