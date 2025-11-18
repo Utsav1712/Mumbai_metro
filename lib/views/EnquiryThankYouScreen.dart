@@ -2,7 +2,9 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:new_packers_application/lib/constant/app_color.dart';
+import 'package:new_packers_application/lib/models/customer_data_model.dart';
 import 'dart:convert';
 import '../lib/constant/app_formatter.dart';
 import '../lib/payment_service/payment_service.dart';
@@ -17,8 +19,10 @@ const Color whiteColor = Color(0xFFf7f7f7);
 class EnquiryBookingConfirmationWithAmount extends StatefulWidget {
   final EnquiryResponse enquiryResponse;
 
-  const EnquiryBookingConfirmationWithAmount(
-      {super.key, required this.enquiryResponse});
+  const EnquiryBookingConfirmationWithAmount({
+    super.key,
+    required this.enquiryResponse,
+  });
 
   @override
   State<EnquiryBookingConfirmationWithAmount> createState() =>
@@ -37,16 +41,45 @@ class _EnquiryBookingConfirmationWithAmountState
 
   bool isPaymentLoading = false;
 
-  _payButtonSubmit() {
+  Future<CustomerModel?> fetchData() async {
+    try {
+      final String baseUrl = "http://54kidsstreet.org";
+
+      final response = await http.get(
+        Uri.parse(
+            "$baseUrl/api/customer/${widget.enquiryResponse.data?.customerId ?? 0}"),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      );
+
+      log("➡ API Response: ${response.body}");
+
+      if (response.statusCode == 200) {
+        return CustomerModel.fromJson(jsonDecode(response.body));
+      } else {
+        log("⚠ Something went wrong");
+        return null;
+      }
+    } catch (e) {
+      log("❌ Error fetching customer: $e");
+      return null;
+    }
+  }
+
+  _payButtonSubmit() async {
     try {
       setState(() {
         isPaymentLoading = true;
       });
-      PaymentService().startPayment(context,
-          amount: calculatePercentage(double.parse(
-              (widget.enquiryResponse.data?.amount ?? 0).toString())),
-          name: 'User',
-          orderNumber: (widget.enquiryResponse.data?.orderNo ?? '').toString());
+      final customerModel = await fetchData();
+      PaymentService().startPaymentFlow(
+        context,
+        amount: calculatePercentage(double.parse(
+            (widget.enquiryResponse.data?.amount ?? 0).toString())),
+        customerData: customerModel!,
+        orderNumber: (widget.enquiryResponse.data?.orderNo ?? '').toString(),
+      );
     } catch (e) {
       setState(() {
         isPaymentLoading = false;
@@ -400,8 +433,8 @@ class EnquiryThankYouScreen extends StatelessWidget {
                     _buildDetailRow('Total KM: ',
                         '${enquiryResponse.data?.distance ?? ''}'),
                     if ((enquiryResponse.data?.distance ?? 0) != 0) ...[
-                      _buildDetailRow(
-                          'Total CFT: ', (enquiryResponse.totalCft ?? 0).toString()),
+                      _buildDetailRow('Total CFT: ',
+                          (enquiryResponse.totalCft ?? 0).toString()),
                     ]
                   ],
                 ),

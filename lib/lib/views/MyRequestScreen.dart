@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:new_packers_application/lib/constant/app_formatter.dart';
+import 'package:new_packers_application/lib/models/customer_data_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../views/PendingScreen.dart';
@@ -12,7 +13,10 @@ import '../payment_service/payment_service.dart';
 class MyRequestScreen extends StatefulWidget {
   final int customerId;
 
-  const MyRequestScreen({super.key, required this.customerId});
+  const MyRequestScreen({
+    super.key,
+    required this.customerId,
+  });
 
   @override
   State<MyRequestScreen> createState() => _MyRequestScreenState();
@@ -31,6 +35,31 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
   void initState() {
     super.initState();
     _fetchEnquiries();
+  }
+
+  Future<CustomerModel?> fetchData() async {
+    try {
+      final String baseUrl = "http://54kidsstreet.org";
+
+      final response = await http.get(
+        Uri.parse("$baseUrl/api/customer/${widget.customerId ?? 0}"),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      );
+
+      log("➡ API Response: ${response.body}");
+
+      if (response.statusCode == 200) {
+        return CustomerModel.fromJson(jsonDecode(response.body));
+      } else {
+        log("⚠ Something went wrong");
+        return null;
+      }
+    } catch (e) {
+      log("❌ Error fetching customer: $e");
+      return null;
+    }
   }
 
   Future<void> _fetchEnquiries() async {
@@ -83,17 +112,18 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
   _payButtonSubmit({
     required int amount,
     required String orderNumber,
-  }) {
+  }) async {
     if (amount != 0 && orderNumber != '') {
       try {
         setState(() {
           isPaymentLoading = true;
         });
-        PaymentService().startPayment(
+        final customerModel = await fetchData();
+        PaymentService().startPaymentFlow(
           context,
           amount: amount,
-          name: 'User',
           orderNumber: orderNumber,
+          customerData: customerModel!,
         );
       } catch (e) {
         setState(() {
@@ -488,7 +518,8 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                               ),
                             ],
                           ),
-                          if (paymentDetails.isNotEmpty) ...[
+                          if (paymentDetails[0]['payment_status'] ==
+                              'success') ...[
                             SizedBox(
                               height: 3,
                             ),
@@ -505,6 +536,31 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 Expanded(
                                   child: Text(
                                     "\u20B9${(paymentDetails[0]['amount'] ?? 0).toString()}(Paid)",
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.black54,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Poppins'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 3,
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  "Payment Date: ",
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      color: darkBlue,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Poppins'),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    "${AppFormatter.convertCreateDate(input: paymentDetails[0]['created_at'])}",
                                     style: const TextStyle(
                                         fontSize: 14,
                                         color: Colors.black54,
@@ -556,7 +612,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                             SizedBox(
                               height: 10,
                             ),
-                            enquiry['total_paid'] != 0
+                            paymentDetails[0]['payment_status'] == 'success'
                                 ? SizedBox()
                                 : SizedBox(
                                     height: 40,

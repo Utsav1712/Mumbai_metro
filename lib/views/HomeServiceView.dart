@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:new_packers_application/lib/constant/app_drawer.dart';
+import 'package:new_packers_application/lib/constant/app_strings.dart';
 import 'package:new_packers_application/views/VendorRegScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -185,14 +186,43 @@ class _HomeServiceViewState extends State<HomeServiceView> {
     super.dispose();
   }
 
+  Future<CustomerModel?> fetchCustomerData() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      final customerId = prefs.getString(AppStrings.customerId) ?? '0';
+      final String baseUrl = "http://54kidsstreet.org";
+
+      final response = await http.get(
+        Uri.parse("$baseUrl/api/customer/${customerId}"),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      );
+
+      log("➡ API Response: ${response.body}");
+
+      if (response.statusCode == 200) {
+        return CustomerModel.fromJson(jsonDecode(response.body));
+      } else {
+        log("⚠ Something went wrong");
+        return null;
+      }
+    } catch (e) {
+      log("❌ Error fetching customer: $e");
+      return null;
+    }
+  }
+
   Future<void> _navigateToMyRequest() async {
     final prefs = await SharedPreferences.getInstance();
     final String? customerId = prefs.getString('customerId');
+    // final customerModel=await fetchCustomerData();
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            MyRequestScreen(customerId: int.parse(customerId ?? '0')),
+        builder: (context) => MyRequestScreen(
+          customerId: int.parse(customerId ?? '0'),
+        ),
       ),
     );
   }
@@ -389,15 +419,15 @@ class _HomeServiceViewState extends State<HomeServiceView> {
       ),
       body: isLoading
           ? Container(
-            color: Colors.white,
-            child: Center(
-              child: SizedBox(
-                height: 50,
-                width: 50,
-                child: CircularProgressIndicator(),
+              color: Colors.white,
+              child: Center(
+                child: SizedBox(
+                  height: 50,
+                  width: 50,
+                  child: CircularProgressIndicator(),
+                ),
               ),
-            ),
-          )
+            )
           : Container(
               color: whiteColor,
               child: Column(
