@@ -11,7 +11,7 @@ class ShiftData {
 
   // Additional fields for subcategory navigation
   int? subCategoryId;
-  String? categoryBannerImg;
+  String? subCategoryBannerImg;
   String? categoryDesc;
 
   // Location related fields
@@ -36,7 +36,7 @@ class ShiftData {
     required this.selectedProducts,
     this.customerId,
     this.subCategoryId,
-    this.categoryBannerImg,
+    this.subCategoryBannerImg,
     this.categoryDesc,
     this.sourceAddress,
     this.destinationAddress,
@@ -64,7 +64,7 @@ class ShiftData {
       'selectedProducts': selectedProducts.map((p) => p.toJson()).toList(),
       'customerId': customerId,
       'subCategoryId': subCategoryId,
-      'categoryBannerImg': categoryBannerImg,
+      'subCategoryBannerImage': subCategoryBannerImg,
       'categoryDesc': categoryDesc,
       'sourceAddress': sourceAddress,
       'destinationAddress': destinationAddress,

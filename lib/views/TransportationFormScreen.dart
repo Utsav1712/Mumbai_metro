@@ -21,7 +21,7 @@ class TransportationFormScreen extends StatefulWidget {
   final int subCategoryId;
   final String subCategoryName;
   final int? customerId;
-  final String? categoryBannerImg;
+  final String? subCategoryBannerImg;
   final String? categoryDesc;
 
   const TransportationFormScreen({
@@ -29,7 +29,7 @@ class TransportationFormScreen extends StatefulWidget {
     required this.subCategoryId,
     required this.subCategoryName,
     this.customerId,
-    this.categoryBannerImg,
+    this.subCategoryBannerImg,
     this.categoryDesc,
   });
 
@@ -290,8 +290,8 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
   @override
   Widget build(BuildContext context) {
     // Check if banner and description exist
-    bool hasBanner = widget.categoryBannerImg != null &&
-        widget.categoryBannerImg!.isNotEmpty;
+    bool hasBanner = widget.subCategoryBannerImg != null &&
+        widget.subCategoryBannerImg!.isNotEmpty;
     bool hasDescription =
         widget.categoryDesc != null && widget.categoryDesc!.isNotEmpty;
     bool showBannerSection = hasBanner || hasDescription;
@@ -381,7 +381,7 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
                                     child: FadeInImage.assetNetwork(
                                       placeholder: 'assets/parcelwala4.jpg',
                                       image:
-                                          'https://54kidsstreet.org/admin_assets/category_banner_img/${widget.categoryBannerImg}',
+                                          'https://54kidsstreet.org/admin_assets/category_banner_img/${widget.subCategoryBannerImg}',
                                       fit: BoxFit.cover,
                                       imageErrorBuilder:
                                           (context, error, stackTrace) {

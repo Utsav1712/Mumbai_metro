@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:new_packers_application/lib/constant/app_formatter.dart';
+import 'package:new_packers_application/lib/constant/app_strings.dart';
 import '../../models/ShiftData.dart';
 import '../../views/ACServicesScreen.dart' as AppColor;
 import '../../views/ServiceSelectionScreen.dart';
@@ -37,9 +38,11 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
       TextEditingController();
   final TextEditingController _destinationLocalityController =
       TextEditingController();
+
   // bool _normalLiftSource = false;
   bool _serviceLiftSource = false;
   int _floorSource = 0;
+
   // bool _normalLiftDestination = false;
   bool _serviceLiftDestination = false;
   int _floorDestination = 0;
@@ -334,7 +337,6 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
   String _detailedAddress = "";
   bool _isLoadingAddress = false;
 
-
   Future<void> _getAddressFromCoordinates(LatLng position) async {
     if (_isLoadingAddress) return;
 
@@ -394,7 +396,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
         }
 
         String detailed =
-        detailedParts.isNotEmpty ? detailedParts.join(", ") : "";
+            detailedParts.isNotEmpty ? detailedParts.join(", ") : "";
 
         setState(() {
           _currentAddress = mainAddress;
@@ -405,7 +407,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
         setState(() {
           _currentAddress = "Unknown location";
           _detailedAddress =
-          "Lat: ${position.latitude.toStringAsFixed(6)}, Lng: ${position.longitude.toStringAsFixed(6)}";
+              "Lat: ${position.latitude.toStringAsFixed(6)}, Lng: ${position.longitude.toStringAsFixed(6)}";
           _isLoadingAddress = false;
         });
       }
@@ -416,7 +418,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
       setState(() {
         _currentAddress = "Unknown location";
         _detailedAddress =
-        "Lat: ${position.latitude.toStringAsFixed(6)}, Lng: ${position.longitude.toStringAsFixed(6)}";
+            "Lat: ${position.latitude.toStringAsFixed(6)}, Lng: ${position.longitude.toStringAsFixed(6)}";
         _isLoadingAddress = false;
       });
     }
@@ -424,8 +426,8 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool hasBanner = widget.shiftData.categoryBannerImg != null &&
-        widget.shiftData.categoryBannerImg!.isNotEmpty;
+    bool hasBanner = widget.shiftData.subCategoryBannerImg != null &&
+        widget.shiftData.subCategoryBannerImg!.isNotEmpty;
     bool hasDescription = widget.shiftData.categoryDesc != null &&
         widget.shiftData.categoryDesc!.isNotEmpty;
     bool showBannerSection = hasBanner || hasDescription;
@@ -474,8 +476,11 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                                 borderRadius: BorderRadius.circular(8),
                                 child: FadeInImage.assetNetwork(
                                   placeholder: 'assets/parcelwala4.jpg',
-                                  image:
-                                      'https://54kidsstreet.org/admin_assets/category_banner_img/${widget.shiftData.categoryBannerImg}',
+                                  image: AppStrings.subcategoryBannerImage(
+                                    bannerImage:
+                                        widget.shiftData.subCategoryBannerImg ??
+                                            '',
+                                  ),
                                   fit: BoxFit.cover,
                                   imageErrorBuilder:
                                       (context, error, stackTrace) {

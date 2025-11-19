@@ -6,7 +6,9 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:new_packers_application/lib/constant/app_color.dart';
 import 'package:new_packers_application/lib/constant/app_formatter.dart';
+import 'package:new_packers_application/lib/constant/app_strings.dart';
 
 import '../lib/views/map_picker_screen.dart';
 import '../models/ServiceEnquiryData.dart';
@@ -47,6 +49,8 @@ class SubCategory {
   final int subCategoryService;
   final String subCategoryName;
   final String categoryName;
+  final String bannerImage;
+  final String subCateIconImage;
 
   SubCategory({
     required this.categoryId,
@@ -54,6 +58,8 @@ class SubCategory {
     required this.subCategoryService,
     required this.subCategoryName,
     required this.categoryName,
+    required this.bannerImage,
+    required this.subCateIconImage,
   });
 
   factory SubCategory.fromJson(Map<String, dynamic> json) {
@@ -63,6 +69,8 @@ class SubCategory {
       subCategoryService: json['sub_category_service'] as int,
       subCategoryName: json['sub_categoryname'] as String,
       categoryName: json['category_name'] as String,
+      bannerImage: json['sub_banner_image'] ?? '',
+      subCateIconImage: json['sub_icon_image'] ?? '',
     );
   }
 }
@@ -122,6 +130,14 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
   }
 
   Widget _buildSubCategoryButton(SubCategory subCategory) {
+    String? imageUrl = subCategory.subCateIconImage != '' &&
+            subCategory.subCateIconImage.isNotEmpty
+        ? AppStrings.subcategoryIconImage(
+            iconImage: subCategory.subCateIconImage)
+        : null;
+    IconData defaultIcon = Icons.category;
+
+    log('Image URL---->>${imageUrl}');
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Container(
@@ -140,7 +156,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
                 selectedProducts: [],
                 customerId: widget.customerId,
                 subCategoryId: subCategory.id,
-                categoryBannerImg: widget.categoryBannerImg,
+                subCategoryBannerImg: subCategory.bannerImage,
                 categoryDesc: widget.categoryDesc,
               );
 
@@ -163,7 +179,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
                     subCategoryId: subCategory.id,
                     subCategoryName: subCategory.subCategoryName,
                     customerId: widget.customerId,
-                    categoryBannerImg: widget.categoryBannerImg,
+                    subCategoryBannerImg: subCategory.bannerImage,
                     categoryDesc: widget.categoryDesc,
                   ),
                 ),
@@ -177,7 +193,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
                     subCategoryId: subCategory.id,
                     subCategoryName: subCategory.subCategoryName,
                     customerId: widget.customerId,
-                    categoryBannerImg: widget.categoryBannerImg,
+                    subCategoryBanner: subCategory.bannerImage,
                     categoryDesc: widget.categoryDesc,
                   ),
                 ),
@@ -204,7 +220,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
                     subCategoryId: subCategory.id,
                     subCategoryName: subCategory.subCategoryName,
                     customerId: widget.customerId,
-                    categoryBannerImg: widget.categoryBannerImg,
+                    subCategoryBannerImg: subCategory.bannerImage,
                     categoryDesc: widget.categoryDesc,
                   ),
                 ),
@@ -219,14 +235,54 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              subCategory.subCategoryName,
-              style: const TextStyle(
-                color: whiteColor,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12,
+            ),
+            child: Row(
+              spacing: 20,
+              children: [
+                Center(
+                    child: imageUrl != null && imageUrl.isNotEmpty
+                        ? SizedBox(
+                            height: 40,
+                            width: 40,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(25),
+                              child: FadeInImage.assetNetwork(
+                                placeholder: 'assets/parcelwala4.jpg',
+                                image: imageUrl,
+                                fit: BoxFit.fill,
+                                alignment: Alignment.center,
+                                imageErrorBuilder:
+                                    (context, error, stackTrace) {
+                                  return Icon(defaultIcon,
+                                      color: mediumBlue, size: 28);
+                                },
+                              ),
+                            ),
+                          )
+                        // : Icon(defaultIcon, color: AppColor.whiteColor, size: 28),
+                        : SizedBox(
+                            height: 40,
+                            width: 40,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.asset(
+                                'assets/parcelwala4.jpg',
+                                fit: BoxFit.fill,
+                                alignment: Alignment.center,
+                              ),
+                            ),
+                          )),
+                Text(
+                  subCategory.subCategoryName,
+                  style: const TextStyle(
+                    color: whiteColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -288,7 +344,7 @@ class ServiceFormScreenWithCoordinate extends StatefulWidget {
   final int subCategoryId;
   final String subCategoryName;
   final int? customerId;
-  final String? categoryBannerImg;
+  final String? subCategoryBanner;
   final String? categoryDesc;
 
   const ServiceFormScreenWithCoordinate({
@@ -296,7 +352,7 @@ class ServiceFormScreenWithCoordinate extends StatefulWidget {
     required this.subCategoryId,
     required this.subCategoryName,
     this.customerId,
-    this.categoryBannerImg,
+    this.subCategoryBanner,
     this.categoryDesc,
   });
 
@@ -320,6 +376,7 @@ class _ServiceFormScreenWithCoordinateState
   DateTime? _selectedDate;
   LatLng? _selectedLocation;
   bool _isSubmitting = false;
+
   // TimeOfDay? _selectedTime;
   String selectedTime = '';
   LatLng? _pickupCoordinates;
@@ -561,16 +618,6 @@ class _ServiceFormScreenWithCoordinateState
     }
   }
 
-  String? _getBannerImageUrl() {
-    if (widget.categoryBannerImg != null &&
-        widget.categoryBannerImg!.isNotEmpty) {
-      debugPrint("_getBannerImageUrl called with: ${widget.categoryBannerImg}");
-      return 'https://54kidsstreet.org/admin_assets/category_banner_img/${widget.categoryBannerImg}';
-    }
-    debugPrint("_getBannerImageUrl: No banner image provided");
-    return null;
-  }
-
   final List<String> timeSlots = [
     '09:00 AM',
     '10:00 AM',
@@ -593,8 +640,8 @@ class _ServiceFormScreenWithCoordinateState
 
   @override
   Widget build(BuildContext context) {
-    bool hasBanner = widget.categoryBannerImg != null &&
-        widget.categoryBannerImg!.isNotEmpty;
+    bool hasBanner = widget.subCategoryBanner != null &&
+        widget.subCategoryBanner!.isNotEmpty;
     bool hasDescription =
         widget.categoryDesc != null && widget.categoryDesc!.isNotEmpty;
     bool showBannerSection = hasBanner || hasDescription;
@@ -679,7 +726,10 @@ class _ServiceFormScreenWithCoordinateState
                                     borderRadius: BorderRadius.circular(8),
                                     child: FadeInImage.assetNetwork(
                                       placeholder: 'assets/parcelwala4.jpg',
-                                      image: _getBannerImageUrl()!,
+                                      image: AppStrings.subcategoryBannerImage(
+                                        bannerImage:
+                                            widget.subCategoryBanner ?? '',
+                                      ),
                                       fit: BoxFit.cover,
                                       imageErrorBuilder:
                                           (context, error, stackTrace) {
@@ -819,7 +869,8 @@ class _ServiceFormScreenWithCoordinateState
                                 hintText: 'Select time',
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(color: Colors.grey),
+                                  borderSide:
+                                      const BorderSide(color: Colors.grey),
                                 ),
                                 contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 10),
@@ -828,8 +879,8 @@ class _ServiceFormScreenWithCoordinateState
                               items: timeSlots.map((String time) {
                                 return DropdownMenuItem<String>(
                                   value: time,
-                                  child:
-                                  Text(time, overflow: TextOverflow.ellipsis),
+                                  child: Text(time,
+                                      overflow: TextOverflow.ellipsis),
                                 );
                               }).toList(),
                               onChanged: (String? newValue) {
@@ -1092,7 +1143,7 @@ class ServiceFormScreen extends StatefulWidget {
   final int subCategoryId;
   final String subCategoryName;
   final int? customerId;
-  final String? categoryBannerImg;
+  final String? subCategoryBannerImg;
   final String? categoryDesc;
 
   const ServiceFormScreen({
@@ -1100,7 +1151,7 @@ class ServiceFormScreen extends StatefulWidget {
     required this.subCategoryId,
     required this.subCategoryName,
     this.customerId,
-    this.categoryBannerImg,
+    this.subCategoryBannerImg,
     this.categoryDesc,
   });
 
@@ -1283,16 +1334,6 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
     }
   }
 
-  String? _getBannerImageUrl() {
-    if (widget.categoryBannerImg != null &&
-        widget.categoryBannerImg!.isNotEmpty) {
-      debugPrint("_getBannerImageUrl called with: ${widget.categoryBannerImg}");
-      return 'https://54kidsstreet.org/admin_assets/category_banner_img/${widget.categoryBannerImg}';
-    }
-    debugPrint("_getBannerImageUrl: No banner image provided");
-    return null;
-  }
-
   @override
   void dispose() {
     _serviceDescriptionController.dispose();
@@ -1303,8 +1344,8 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool hasBanner = widget.categoryBannerImg != null &&
-        widget.categoryBannerImg!.isNotEmpty;
+    bool hasBanner = widget.subCategoryBannerImg != null &&
+        widget.subCategoryBannerImg!.isNotEmpty;
     bool hasDescription =
         widget.categoryDesc != null && widget.categoryDesc!.isNotEmpty;
     bool showBannerSection = hasBanner || hasDescription;
@@ -1389,7 +1430,10 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                                     borderRadius: BorderRadius.circular(8),
                                     child: FadeInImage.assetNetwork(
                                       placeholder: 'assets/parcelwala4.jpg',
-                                      image: _getBannerImageUrl()!,
+                                      image: AppStrings.subcategoryBannerImage(
+                                          bannerImage:
+                                              widget.subCategoryBannerImg ??
+                                                  ''),
                                       fit: BoxFit.cover,
                                       imageErrorBuilder:
                                           (context, error, stackTrace) {

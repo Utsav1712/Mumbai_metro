@@ -19,4 +19,20 @@ class AppStrings {
   static String refund = 'Refund Policy';
   static String contact = 'Contact Us';
   static String aboutUs = 'About Us';
+
+  static String subcategoryBannerImage({required String bannerImage}) {
+    if (bannerImage != '') {
+      return "https://54kidsstreet.org/admin_assets/subcategories/$bannerImage";
+    } else {
+      return '';
+    }
+  }
+
+  static String subcategoryIconImage({required String iconImage}) {
+    if (iconImage != '') {
+      return "https://54kidsstreet.org/admin_assets/subcategoriesIconImg/$iconImage";
+    } else {
+      return '';
+    }
+  }
 }

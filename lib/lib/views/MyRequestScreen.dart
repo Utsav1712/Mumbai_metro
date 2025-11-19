@@ -156,6 +156,16 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
     }
   }
 
+  String calculateBalanceAmount({
+    required String paidAmount,
+    required String totalAmount,
+  }) {
+    double doubleBalanceAmount =
+        double.parse(totalAmount) - double.parse(paidAmount);
+    int intBalanceAmount = doubleBalanceAmount.toInt();
+    return '${intBalanceAmount.toString()}\u20B9';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -231,29 +241,48 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                   color: Colors.black87,
                                 ),
                               ),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PendingScreen(),
-                                    ),
-                                  );
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: mediumBlue,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Text(
-                                    "Pending",
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 12),
-                                  ),
-                                ),
-                              )
+                              paymentDetails.isNotEmpty &&
+                                      paymentDetails.last['payment_status'] ==
+                                          'success'
+                                  ? Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: mediumBlue,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Text(
+                                        "Success",
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 12),
+                                      ),
+                                    )
+                                  : GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                PendingScreen(),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: mediumBlue,
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: const Text(
+                                          "Pending",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12),
+                                        ),
+                                      ),
+                                    )
                             ],
                           ),
                           const SizedBox(height: 8),
@@ -518,8 +547,9 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                               ),
                             ],
                           ),
-                          if (paymentDetails[0]['payment_status'] ==
-                              'success') ...[
+                          if (paymentDetails.isNotEmpty &&
+                              paymentDetails.last['payment_status'] ==
+                                  'success') ...[
                             SizedBox(
                               height: 3,
                             ),
@@ -535,7 +565,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 ),
                                 Expanded(
                                   child: Text(
-                                    "\u20B9${(paymentDetails[0]['amount'] ?? 0).toString()}(Paid)",
+                                    "\u20B9${(paymentDetails.last['amount'] ?? 0).toString()}(Paid)",
                                     style: const TextStyle(
                                         fontSize: 14,
                                         color: Colors.black54,
@@ -612,8 +642,32 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                             SizedBox(
                               height: 10,
                             ),
-                            paymentDetails[0]['payment_status'] == 'success'
-                                ? SizedBox()
+                            paymentDetails.isNotEmpty &&
+                                    paymentDetails.last['payment_status'] ==
+                                        'success'
+                                ? SizedBox(
+                                    height: 40,
+                                    width: MediaQuery.of(context).size.width,
+                                    child: ElevatedButton(
+                                      onPressed: () {},
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: mediumBlue,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(25),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'Balance to pay ${calculateBalanceAmount(paidAmount: (paymentDetails.last['amount'] ?? 0).toString(), totalAmount: (enquiry["total_amount"] ?? 0).toString())}',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: whiteColor,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                    ),
+                                  )
                                 : SizedBox(
                                     height: 40,
                                     width: MediaQuery.of(context).size.width,

@@ -345,13 +345,14 @@ class _HomeServiceViewState extends State<HomeServiceView> {
           Center(
             child: imageUrl != null && imageUrl.isNotEmpty
                 ? SizedBox(
-                    height: 28,
-                    width: 28,
+                    height: 60,
+                    width: 60,
                     child: ClipRRect(
+                      borderRadius: BorderRadius.circular(1000),
                       child: FadeInImage.assetNetwork(
                         placeholder: 'assets/parcelwala4.jpg',
                         image: imageUrl,
-                        fit: BoxFit.contain,
+                        fit: BoxFit.fill,
                         alignment: Alignment.center,
                         imageErrorBuilder: (context, error, stackTrace) {
                           print(
@@ -432,80 +433,94 @@ class _HomeServiceViewState extends State<HomeServiceView> {
               color: whiteColor,
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Hi, ${customerModel?.data.customerName ?? 'User'}',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Poppins',
-                          color: darkBlue,
-                        ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: BouncingScrollPhysics(),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Hi, ${customerModel?.data.customerName ?? 'User'}',
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Poppins',
+                                  color: darkBlue,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            height: 200,
+                            color: lightBlue,
+                            child: isLoadingBanners
+                                ? const Center(
+                                    child: CircularProgressIndicator())
+                                : PageView.builder(
+                                    controller: _pageController,
+                                    itemCount: bannerImages.length,
+                                    onPageChanged: (index) {
+                                      setState(() {
+                                        currentIndex = index;
+                                      });
+                                    },
+                                    itemBuilder: (context, index) {
+                                      final imagePath = bannerImages[index];
+                                      final isNetwork =
+                                          _isNetworkImage(imagePath);
+
+                                      return ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: isNetwork
+                                            ? FadeInImage.assetNetwork(
+                                                placeholder:
+                                                    'assets/parcelwala4.jpg',
+                                                image: imagePath,
+                                                fit: BoxFit.cover,
+                                                imageErrorBuilder: (c, e, s) =>
+                                                    Image.asset(
+                                                        'assets/parcelwala4.jpg',
+                                                        fit: BoxFit.cover),
+                                              )
+                                            : Image.asset(imagePath,
+                                                fit: BoxFit.cover),
+                                      );
+                                    },
+                                  ),
+                          ),
+                          const SizedBox(height: 20),
+                          isLoadingCategories
+                              ? const Center(child: CircularProgressIndicator())
+                              : GridView.count(
+                                  crossAxisCount: 2,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  padding: const EdgeInsets.all(16.0),
+                                  crossAxisSpacing: 10,
+                                  mainAxisSpacing: 10,
+                                  childAspectRatio: 3/3,
+                                  children: [
+                                    ...categories.map(
+                                        (cat) => _buildCategoryButton(cat)),
+                                    _buildButton(
+                                        'My Booking', Icons.check_circle,
+                                        onTap: _navigateToMyRequest),
+                                    _buildButton('Call Us', Icons.call,
+                                        onTap: _makePhoneCall),
+                                    _buildButton(
+                                      'Vendor Registration',
+                                      Icons.person,
+                                      onTap: _navigateToVendorReg,
+                                    ),
+                                  ],
+                                ),
+                        ],
                       ),
                     ),
                   ),
-                  Container(
-                    height: 200,
-                    color: lightBlue,
-                    child: isLoadingBanners
-                        ? const Center(child: CircularProgressIndicator())
-                        : PageView.builder(
-                            controller: _pageController,
-                            itemCount: bannerImages.length,
-                            onPageChanged: (index) {
-                              setState(() {
-                                currentIndex = index;
-                              });
-                            },
-                            itemBuilder: (context, index) {
-                              final imagePath = bannerImages[index];
-                              final isNetwork = _isNetworkImage(imagePath);
-
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: isNetwork
-                                    ? FadeInImage.assetNetwork(
-                                        placeholder: 'assets/parcelwala4.jpg',
-                                        image: imagePath,
-                                        fit: BoxFit.cover,
-                                        imageErrorBuilder: (c, e, s) =>
-                                            Image.asset(
-                                                'assets/parcelwala4.jpg',
-                                                fit: BoxFit.cover),
-                                      )
-                                    : Image.asset(imagePath, fit: BoxFit.cover),
-                              );
-                            },
-                          ),
-                  ),
-                  const SizedBox(height: 20),
-                  isLoadingCategories
-                      ? const Center(child: CircularProgressIndicator())
-                      : Expanded(
-                          child: GridView.count(
-                            crossAxisCount: 2,
-                            padding: const EdgeInsets.all(16.0),
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 10,
-                            childAspectRatio: 2.0,
-                            children: [
-                              ...categories
-                                  .map((cat) => _buildCategoryButton(cat)),
-                              _buildButton('My Booking', Icons.check_circle,
-                                  onTap: _navigateToMyRequest),
-                              _buildButton('Call Us', Icons.call,
-                                  onTap: _makePhoneCall),
-                              _buildButton(
-                                'Vendor Registration',
-                                Icons.person,
-                                onTap: _navigateToVendorReg,
-                              ),
-                            ],
-                          ),
-                        ),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: ElevatedButton(
