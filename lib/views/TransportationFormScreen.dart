@@ -22,7 +22,7 @@ class TransportationFormScreen extends StatefulWidget {
   final String subCategoryName;
   final int? customerId;
   final String? subCategoryBannerImg;
-  final String? subCategoryDesc;
+  final String? categoryDesc;
 
   const TransportationFormScreen({
     super.key,
@@ -30,7 +30,7 @@ class TransportationFormScreen extends StatefulWidget {
     required this.subCategoryName,
     this.customerId,
     this.subCategoryBannerImg,
-    this.subCategoryDesc,
+    this.categoryDesc,
   });
 
   @override
@@ -293,7 +293,7 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
     bool hasBanner = widget.subCategoryBannerImg != null &&
         widget.subCategoryBannerImg!.isNotEmpty;
     bool hasDescription =
-        widget.subCategoryDesc != null && widget.subCategoryDesc!.isNotEmpty;
+        widget.categoryDesc != null && widget.categoryDesc!.isNotEmpty;
     bool showBannerSection = hasBanner || hasDescription;
 
     return Scaffold(
@@ -398,7 +398,7 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
                               // Description - Only if exists
                               if (hasDescription)
                                 Text(
-                                  widget.subCategoryDesc!,
+                                  widget.categoryDesc!,
                                   style: const TextStyle(
                                     fontFamily: 'Poppins',
                                     fontSize: 14,
