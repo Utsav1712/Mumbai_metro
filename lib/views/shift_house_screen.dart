@@ -242,6 +242,7 @@ class ShiftHouseScreen extends StatelessWidget {
 
                       // Create ShiftData instance
                       final shiftData = ShiftData(
+                        subCategoryDesc: '',
                         serviceId: 0, // Placeholder; replace with actual serviceId if available
                         serviceName: 'Shift My House', // Placeholder; replace with actual serviceName if available
                         selectedDate: viewModel.shiftHouseData.selectedDate,

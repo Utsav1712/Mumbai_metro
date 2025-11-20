@@ -345,8 +345,8 @@ class _HomeServiceViewState extends State<HomeServiceView> {
           Center(
             child: imageUrl != null && imageUrl.isNotEmpty
                 ? SizedBox(
-                    height: 60,
-                    width: 60,
+                    height: 28,
+                    width: 28,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(1000),
                       child: FadeInImage.assetNetwork(
@@ -501,7 +501,7 @@ class _HomeServiceViewState extends State<HomeServiceView> {
                                   padding: const EdgeInsets.all(16.0),
                                   crossAxisSpacing: 10,
                                   mainAxisSpacing: 10,
-                                  childAspectRatio: 3/3,
+                            childAspectRatio: 2.0,
                                   children: [
                                     ...categories.map(
                                         (cat) => _buildCategoryButton(cat)),
