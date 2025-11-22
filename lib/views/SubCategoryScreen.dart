@@ -51,6 +51,7 @@ class SubCategory {
   final String categoryName;
   final String bannerImage;
   final String subCateIconImage;
+  final String subCateDescription;
 
   SubCategory({
     required this.categoryId,
@@ -60,6 +61,7 @@ class SubCategory {
     required this.categoryName,
     required this.bannerImage,
     required this.subCateIconImage,
+    required this.subCateDescription,
   });
 
   factory SubCategory.fromJson(Map<String, dynamic> json) {
@@ -71,6 +73,7 @@ class SubCategory {
       categoryName: json['category_name'] as String,
       bannerImage: json['sub_banner_image'] ?? '',
       subCateIconImage: json['sub_icon_image'] ?? '',
+      subCateDescription: json['sub_category_desc'] ?? '',
     );
   }
 }
@@ -149,6 +152,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
             if (subCategory.subCategoryService == 1) {
               // Create initial ShiftData for service type 1
               final shiftData = ShiftData(
+                subCategoryDesc: subCategory.subCateDescription,
                 serviceId: 0,
                 serviceName: subCategory.subCategoryName,
                 selectedDate: '',
@@ -180,7 +184,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
                     subCategoryName: subCategory.subCategoryName,
                     customerId: widget.customerId,
                     subCategoryBannerImg: subCategory.bannerImage,
-                    categoryDesc: widget.categoryDesc,
+                    subCategoryDesc: subCategory.subCateDescription,
                   ),
                 ),
               );
@@ -194,7 +198,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
                     subCategoryName: subCategory.subCategoryName,
                     customerId: widget.customerId,
                     subCategoryBanner: subCategory.bannerImage,
-                    categoryDesc: widget.categoryDesc,
+                    subCategoryDesc: subCategory.subCateDescription,
                   ),
                 ),
               );
@@ -221,7 +225,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
                     subCategoryName: subCategory.subCategoryName,
                     customerId: widget.customerId,
                     subCategoryBannerImg: subCategory.bannerImage,
-                    categoryDesc: widget.categoryDesc,
+                    subCategoryDesc: subCategory.subCateDescription,
                   ),
                 ),
               );
@@ -274,12 +278,14 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
                               ),
                             ),
                           )),
-                Text(
-                  subCategory.subCategoryName,
-                  style: const TextStyle(
-                    color: whiteColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    subCategory.subCategoryName,
+                    style: const TextStyle(
+                      color: whiteColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -345,7 +351,7 @@ class ServiceFormScreenWithCoordinate extends StatefulWidget {
   final String subCategoryName;
   final int? customerId;
   final String? subCategoryBanner;
-  final String? categoryDesc;
+  final String? subCategoryDesc;
 
   const ServiceFormScreenWithCoordinate({
     super.key,
@@ -353,7 +359,7 @@ class ServiceFormScreenWithCoordinate extends StatefulWidget {
     required this.subCategoryName,
     this.customerId,
     this.subCategoryBanner,
-    this.categoryDesc,
+    this.subCategoryDesc,
   });
 
   @override
@@ -643,7 +649,7 @@ class _ServiceFormScreenWithCoordinateState
     bool hasBanner = widget.subCategoryBanner != null &&
         widget.subCategoryBanner!.isNotEmpty;
     bool hasDescription =
-        widget.categoryDesc != null && widget.categoryDesc!.isNotEmpty;
+        widget.subCategoryDesc != '' && widget.subCategoryDesc!.isNotEmpty;
     bool showBannerSection = hasBanner || hasDescription;
 
     return Scaffold(
@@ -752,7 +758,7 @@ class _ServiceFormScreenWithCoordinateState
                                 const SizedBox(height: 8),
                               if (hasDescription)
                                 Text(
-                                  widget.categoryDesc!,
+                                  widget.subCategoryDesc??"",
                                   style: const TextStyle(
                                     fontFamily: 'Poppins',
                                     fontSize: 14,
@@ -1144,7 +1150,7 @@ class ServiceFormScreen extends StatefulWidget {
   final String subCategoryName;
   final int? customerId;
   final String? subCategoryBannerImg;
-  final String? categoryDesc;
+  final String? subCategoryDesc;
 
   const ServiceFormScreen({
     super.key,
@@ -1152,7 +1158,7 @@ class ServiceFormScreen extends StatefulWidget {
     required this.subCategoryName,
     this.customerId,
     this.subCategoryBannerImg,
-    this.categoryDesc,
+    this.subCategoryDesc,
   });
 
   @override
@@ -1347,7 +1353,7 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
     bool hasBanner = widget.subCategoryBannerImg != null &&
         widget.subCategoryBannerImg!.isNotEmpty;
     bool hasDescription =
-        widget.categoryDesc != null && widget.categoryDesc!.isNotEmpty;
+        widget.subCategoryDesc != null && widget.subCategoryDesc!.isNotEmpty;
     bool showBannerSection = hasBanner || hasDescription;
 
     return Scaffold(
@@ -1456,7 +1462,7 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                                 const SizedBox(height: 8),
                               if (hasDescription)
                                 Text(
-                                  widget.categoryDesc!,
+                                  widget.subCategoryDesc!,
                                   style: const TextStyle(
                                     fontFamily: 'Poppins',
                                     fontSize: 14,
