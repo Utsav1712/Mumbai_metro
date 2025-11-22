@@ -428,8 +428,8 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
   Widget build(BuildContext context) {
     bool hasBanner = widget.shiftData.subCategoryBannerImg != null &&
         widget.shiftData.subCategoryBannerImg!.isNotEmpty;
-    bool hasDescription = widget.shiftData.subCategoryDesc != '' &&
-        widget.shiftData.subCategoryDesc.isNotEmpty;
+    bool hasDescription = widget.shiftData.categoryDesc != null &&
+        widget.shiftData.categoryDesc!.isNotEmpty;
     bool showBannerSection = hasBanner || hasDescription;
     return Scaffold(
       backgroundColor: whiteColor,
@@ -496,7 +496,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                             const SizedBox(height: 8),
                           if (hasDescription)
                             Text(
-                              widget.shiftData.subCategoryDesc,
+                              widget.shiftData.categoryDesc!,
                               style: const TextStyle(
                                 fontFamily: 'Poppins',
                                 fontSize: 14,

@@ -6,7 +6,6 @@ class ShiftData {
   final String serviceName;
   String selectedDate;
   String selectedTime;
-  String subCategoryDesc;
   List<SelectedProduct> selectedProducts;
   final int? customerId;
 
@@ -38,7 +37,6 @@ class ShiftData {
     this.customerId,
     this.subCategoryId,
     this.subCategoryBannerImg,
-    required this.subCategoryDesc,
     this.categoryDesc,
     this.sourceAddress,
     this.destinationAddress,
@@ -66,7 +64,6 @@ class ShiftData {
       'selectedProducts': selectedProducts.map((p) => p.toJson()).toList(),
       'customerId': customerId,
       'subCategoryId': subCategoryId,
-      'subCategoryDesc': subCategoryDesc,
       'subCategoryBannerImage': subCategoryBannerImg,
       'categoryDesc': categoryDesc,
       'sourceAddress': sourceAddress,

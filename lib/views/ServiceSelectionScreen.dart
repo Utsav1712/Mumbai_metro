@@ -496,7 +496,6 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen> {
                     } else {
                       // Fallback to old behavior if no shiftData
                       final shiftData = ShiftData(
-                        subCategoryDesc: widget.shiftData?.subCategoryDesc??'',
                         serviceId: 0,
                         serviceName: 'Multiple Services',
                         selectedDate: '',
