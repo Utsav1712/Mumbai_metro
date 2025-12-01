@@ -33,6 +33,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/
     - assets/applogo.jpeg
     - assets/home-shifting.jpeg
     - assets/home.png

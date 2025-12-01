@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:new_packers_application/views/SubcategorySelectionScreen.dart';
 import 'dart:convert';
 
 import '../lib/constant/app_color.dart';
@@ -385,7 +386,7 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen> {
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) =>
-                                                    ProductSelectionScreen(
+                                                    SubCategorySelectionScreen(
                                                   serviceId: service.id,
                                                   serviceName:
                                                       service.serviceName,

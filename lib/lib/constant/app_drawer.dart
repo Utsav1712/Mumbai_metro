@@ -151,56 +151,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 SizedBox(
                   height: MediaQuery.of(context).padding.top + 20,
                 ),
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: SizedBox(
-                      height: 40,
-                      width: 200,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          final prefs = await SharedPreferences.getInstance();
-                          final String? customerId =
-                              prefs.getString('customerId');
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => MyProfileScreen(
-                                    customerId: customerId ?? ''),
-                              ));
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColor.mediumBlue,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text(
-                              'My Profile',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColor.whiteColor,
-                                fontFamily: 'Poppins',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+
                 SizedBox(height: 30),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10000),
@@ -210,7 +161,35 @@ class _AppDrawerState extends State<AppDrawer> {
                   ),
                 ),
                 SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  "MUMBAI METRO PACKERS AND MOVERS",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColor.darkBlue,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+                SizedBox(
                   height: 30,
+                ),
+                _buildButton(
+                  icon: Icons.person,
+                  name: 'My Profile',
+                  onTap: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    final String? customerId =
+                    prefs.getString('customerId');
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MyProfileScreen(
+                              customerId: customerId ?? ''),
+                        ));
+                  },
                 ),
                 _buildButton(
                   icon: Icons.calendar_month_outlined,
