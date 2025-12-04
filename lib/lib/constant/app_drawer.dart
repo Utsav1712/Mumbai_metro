@@ -8,12 +8,14 @@ import 'package:new_packers_application/lib/constant/app_color.dart';
 import 'package:new_packers_application/lib/constant/app_strings.dart';
 import 'package:new_packers_application/lib/views/MyRequestScreen.dart';
 import 'package:new_packers_application/views/AppInfoScreen.dart';
+import 'package:new_packers_application/views/ContactUsSceern.dart';
 import 'package:new_packers_application/views/MyProfileScreen.dart';
 import 'package:new_packers_application/views/VendorRegScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../views/ACServicesScreen.dart' as AppColors;
 import '../models/app_policy_model.dart';
+
 
 class AppDrawer extends StatefulWidget {
   const AppDrawer({super.key});
@@ -52,6 +54,8 @@ class _AppDrawerState extends State<AppDrawer> {
         log('➡️ API Response: ${response.body}');
         if (response.statusCode == 200) {
           final jsonData = jsonDecode(response.body);
+          // Assuming PolicyModel.fromJson now correctly handles the PolicyData structure
+          // where contactUs is ContactData and other policies are PolicyItem/AboutUsModel
           privacyModel = PolicyModel.fromJson(jsonData);
         } else {
           log('⚠️ Failed to fetch: ${response.statusCode}');
@@ -95,7 +99,9 @@ class _AppDrawerState extends State<AppDrawer> {
                 size: 20,
                 color: Colors.white,
               ),
-              SizedBox(width: 10,),
+              SizedBox(
+                width: 10,
+              ),
               Expanded(
                 child: Text(
                   name,
@@ -151,7 +157,6 @@ class _AppDrawerState extends State<AppDrawer> {
                 SizedBox(
                   height: MediaQuery.of(context).padding.top + 20,
                 ),
-
                 SizedBox(height: 30),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10000),
@@ -225,6 +230,7 @@ class _AppDrawerState extends State<AppDrawer> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
+                            // Note: Assuming AboutUsModel is assignable to PolicyItem for AppInfoScreen
                             builder: (context) => AppInfoScreen(
                               policyItem: privacyModel!.data.aboutUs,
                             ),
@@ -268,17 +274,17 @@ class _AppDrawerState extends State<AppDrawer> {
                     }
                   },
                 ),
-
                 _buildButton(
                   icon: Icons.call,
                   name: AppStrings.contact,
                   onTap: () {
                     if (privacyModel?.data != null) {
+                      // *** UPDATED TO USE THE DEDICATED CONTACTUSSCREEN ***
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => AppInfoScreen(
-                              policyItem: privacyModel!.data.contactUs,
+                            builder: (context) => ContactUsScreen(
+                              contactData: privacyModel!.data.contactUs,
                             ),
                           ));
                     } else {
@@ -286,7 +292,6 @@ class _AppDrawerState extends State<AppDrawer> {
                     }
                   },
                 ),
-
                 _buildButton(
                   icon: Icons.privacy_tip_outlined,
                   name: AppStrings.privacy,
@@ -304,8 +309,6 @@ class _AppDrawerState extends State<AppDrawer> {
                     }
                   },
                 ),
-
-
               ],
             ),
     );
