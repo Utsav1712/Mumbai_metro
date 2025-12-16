@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:new_packers_application/generated/assets.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 
 // Import the rich ContactUsModel from your app_policy_model.dart
 import 'package:new_packers_application/lib/models/app_policy_model.dart';
@@ -24,14 +23,15 @@ class ContactUsScreen extends StatelessWidget {
   const ContactUsScreen({super.key, required this.contactData});
 
   // Define a consistent color scheme
-  static const Color primaryColor = Color(
-      0xFF1976D2); // Example for AppColor.darkBlue
+  static const Color primaryColor =
+      Color(0xFF1976D2); // Example for AppColor.darkBlue
 
   // Helper for opening maps (using the address)
   void _openInMaps(String address) {
     if (address.isEmpty) return;
     final encodedAddress = Uri.encodeComponent(address);
-    final mapUrl = 'https://www.google.com/maps/search/?api=1&query=$encodedAddress';
+    final mapUrl =
+        'https://www.google.com/maps/search/?api=1&query=$encodedAddress';
     _launchUrl(mapUrl);
   }
 
@@ -78,7 +78,6 @@ class ContactUsScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -120,8 +119,7 @@ class ContactUsScreen extends StatelessWidget {
             const SizedBox(height: 20),
 
             // --- Office Address Section ---
-            _buildAddressSection(
-                context, contactData.address, AppColor.darkBlue),
+            _buildAddressSection(context, contactData, AppColor.darkBlue),
 
             const SizedBox(height: 30),
 
@@ -179,8 +177,8 @@ class ContactUsScreen extends StatelessWidget {
 
   // --- Reusable Widget Builders ---
 
-  Widget _buildAddressSection(BuildContext context, String address,
-      Color primaryColor) {
+  Widget _buildAddressSection(
+      BuildContext context, ContactUsModel data, Color primaryColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -202,7 +200,7 @@ class ContactUsScreen extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(left: 32.0),
           child: Text(
-            address,
+            data.address,
             style: const TextStyle(
               fontSize: 14,
               color: Colors.black54,
@@ -217,20 +215,32 @@ class ContactUsScreen extends StatelessWidget {
                 icon: Icons.map,
                 text: 'Open in Maps',
                 color: primaryColor,
-                onPressed: () => _openInMaps(address),
+                onPressed: () {
+                  if (data.mapLocationLink.isNotEmpty) {
+                    _launchUrl(data.mapLocationLink);
+                  } else {
+                    _openInMaps(data.address);
+                  }
+                },
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: _buildActionButton(
                 icon: Icons.share,
-                text: 'Share Location',
+                text: 'Share App',
                 color: primaryColor,
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text(
-                        'Share location functionality not fully implemented.')),
-                  );
+                  debugPrint('Share App button pressed');
+                  if (data.shareAppLink.isNotEmpty) {
+                    Share.share(data.shareAppLink);
+                  } else {
+                    debugPrint('Share link is empty!');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Share link is not available')),
+                    );
+                  }
                 },
               ),
             ),
@@ -277,7 +287,8 @@ class ContactUsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContactCard(BuildContext context, {
+  Widget _buildContactCard(
+    BuildContext context, {
     required String title,
     required String phone,
     required String email,
@@ -313,16 +324,25 @@ class ContactUsScreen extends StatelessWidget {
           onTap: () => _sendEmail(email),
           child: Row(
             children: [
-              Icon(Icons.email, color: primaryColor, size: 20),
-              const SizedBox(width: 8),
               Expanded(
-                child: Text(
-                  '${title} email ID\n$email',
-                  // Updated to use generic title for email
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '${title} email ID\n',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(
+                        text: email,
+                        style: const TextStyle(
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                   style: TextStyle(
                     fontSize: 14,
                     color: primaryColor,
-                    decoration: TextDecoration.underline,
                   ),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 2,
@@ -381,58 +401,75 @@ class ContactUsScreen extends StatelessWidget {
   }
 
   Widget _buildSocialMediaRow(ContactUsModel data, Color primaryColor) {
-    // A map to associate your SVG assets with the data model's URLs
-    final socialLinks = {
-      Assets.socialMediaIcFacebook: data.facebook,
-      Assets.socialMediaIcInstagram: data.instagram,
-      Assets.socialMediaIcX: data.twitter, // For Twitter/X
-      Assets.socialMediaIcLinkedin: data.linkedin,
-      Assets.socialMediaIcYoutube: data.youtube,
-    };
-
+    final socialLinks = [
+      {'url': data.facebook, 'icon': data.facebookIcon},
+      {'url': data.instagram, 'icon': data.instagramIcon},
+      {'url': data.twitter, 'icon': data.twitterIcon},
+      {'url': data.linkedin, 'icon': data.linkedinIcon},
+      {'url': data.youtube, 'icon': data.youtubeIcon},
+    ];
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Better spacing for icons
-      children: socialLinks.entries.map((entry) {
-        // Only build the icon if the URL is not empty
-        if (entry.value.isNotEmpty) {
-          return _buildSocialSvgIcon(
-            svgAsset: entry.key,
-            url: entry.value,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: socialLinks.map((entry) {
+        final url = entry['url'] as String;
+        final iconUrl = entry['icon'] as String;
+
+        // Only build if we have a valid icon URL
+        if (url.isNotEmpty && iconUrl.isNotEmpty) {
+          return _buildSocialNetworkIcon(
+            imageUrl: iconUrl,
+            url: url,
           );
         }
-        // Return an empty container if the URL is missing
         return const SizedBox.shrink();
       }).toList(),
     );
   }
 
-  // New helper widget to build icons from SVG assets
-  Widget _buildSocialSvgIcon({required String svgAsset, required String url}) {
+  Widget _buildSocialNetworkIcon(
+      {required String imageUrl, required String url}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: InkWell(
         onTap: () => _launchUrl(url),
-        borderRadius: BorderRadius.circular(25), // For ripple effect
+        borderRadius: BorderRadius.circular(25),
         child: Container(
           width: 44,
           height: 44,
-          padding: const EdgeInsets.all(10), // Adjust padding for icon size
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.grey[200], // A neutral background color
+            color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
+                color: Colors.grey.withOpacity(0.3),
+                blurRadius: 5,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
-          child: SvgPicture.asset(
-            svgAsset,
-            // colorFilter allows you to optionally tint the SVG if it's a single-color icon
-            // colorFilter: ColorFilter.mode(Colors.blue, BlendMode.srcIn),
+          child: ClipOval(
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                // Fallback to a generic icon if network image fails
+                return const Icon(Icons.link, size: 20, color: Colors.grey);
+              },
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                            loadingProgress.expectedTotalBytes!
+                        : null,
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -461,4 +498,4 @@ class ContactUsScreen extends StatelessWidget {
       ),
     );
   }
-  }
+}

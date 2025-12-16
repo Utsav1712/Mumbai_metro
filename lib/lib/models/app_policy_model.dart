@@ -51,6 +51,13 @@ class ContactUsModel {
   final String youtube;
   final String address;
   final String email2;
+  final String facebookIcon;
+  final String instagramIcon;
+  final String twitterIcon;
+  final String linkedinIcon;
+  final String youtubeIcon;
+  final String mapLocationLink;
+  final String shareAppLink;
 
   ContactUsModel({
     required this.title,
@@ -65,6 +72,13 @@ class ContactUsModel {
     required this.youtube,
     required this.address,
     required this.email2,
+    required this.facebookIcon,
+    required this.instagramIcon,
+    required this.twitterIcon,
+    required this.linkedinIcon,
+    required this.youtubeIcon,
+    required this.mapLocationLink,
+    required this.shareAppLink,
   });
 
   factory ContactUsModel.fromJson(Map<String, dynamic> json) {
@@ -81,6 +95,13 @@ class ContactUsModel {
       youtube: json['youtube'] ?? '',
       address: json['address'] ?? '',
       email2: json['email2'] ?? '',
+      facebookIcon: json['facebook_icon'] ?? '',
+      instagramIcon: json['instagram_icon'] ?? '',
+      twitterIcon: json['twitter_icon'] ?? '',
+      linkedinIcon: json['linkedin_icon'] ?? '',
+      youtubeIcon: json['youtube_icon'] ?? '',
+      mapLocationLink: json['map_location_link'] ?? '',
+      shareAppLink: json['share_app_link'] ?? '',
     );
   }
 }
@@ -92,7 +113,7 @@ class PolicyData {
   final PolicyItem termsCondition;
   final PolicyItem refundPolicy;
   final ContactUsModel contactUs; // Changed from PolicyItem to ContactUsModel
-  final PolicyItem aboutUs;     // Changed from PolicyItem to AboutUsModel
+  final PolicyItem aboutUs; // Changed from PolicyItem to AboutUsModel
 
   PolicyData({
     required this.privacyPolicy,

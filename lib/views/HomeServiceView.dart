@@ -345,8 +345,8 @@ class _HomeServiceViewState extends State<HomeServiceView> {
           Center(
             child: imageUrl != null && imageUrl.isNotEmpty
                 ? SizedBox(
-                    height: 28,
-                    width: 28,
+                    height: 60,
+                    width: 60,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(1000),
                       child: FadeInImage.assetNetwork(
