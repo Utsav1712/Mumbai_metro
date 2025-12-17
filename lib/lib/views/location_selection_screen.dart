@@ -1,18 +1,11 @@
-import 'dart:math';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:new_packers_application/lib/constant/app_formatter.dart';
 import 'package:new_packers_application/lib/constant/app_strings.dart';
 import '../../models/ShiftData.dart';
 import '../../views/ACServicesScreen.dart' as AppColor;
 import '../../views/ServiceSelectionScreen.dart';
 import '../../views/YourFinalScreen.dart';
-import 'map_picker_screen.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import '../../widgets/location_autocomplete_field.dart';
 
 const Color whiteColor = Color(0xFFf7f7f7);
 const Color darkBlue = Color(0xFF03669d);
@@ -36,7 +29,11 @@ class LocationSelectionScreen extends StatefulWidget {
 class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
   final TextEditingController _sourceLocalityController =
       TextEditingController();
+  final TextEditingController _sourceHouseNoController =
+      TextEditingController();
   final TextEditingController _destinationLocalityController =
+      TextEditingController();
+  final TextEditingController _destinationHouseNoController =
       TextEditingController();
 
   // bool _normalLiftSource = false;
@@ -101,325 +98,6 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
         widget.shiftData.selectedDate = AppFormatter.dateFormater(
           date: picked.toIso8601String().split('T').first,
         );
-      });
-    }
-  }
-
-  Future<void> _pickLocation(bool isSource) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const MapPickerScreen()),
-    );
-
-    if (result != null && result is Map) {
-      setState(() {
-        if (isSource) {
-          _sourceLocalityController.text =
-              result['address'] ?? 'Unknown location';
-          widget.shiftData.sourceCoordinates = result['coordinates'];
-          widget.shiftData.sourceAddress = result['address'];
-        } else {
-          _destinationLocalityController.text =
-              result['address'] ?? 'Unknown location';
-          widget.shiftData.destinationCoordinates = result['coordinates'];
-          widget.shiftData.destinationAddress = result['address'];
-        }
-      });
-      Fluttertoast.showToast(msg: "Location selected successfully");
-    } else {
-      Fluttertoast.showToast(msg: "No location selected");
-    }
-  }
-
-  //New for search direct
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode();
-  bool _isSearching = false;
-  List<SearchResult> _searchSuggestions = [];
-  bool _showSuggestions = false;
-  LatLng _centerPosition = const LatLng(19.0760, 72.8777);
-
-  GoogleMapController? _mapController;
-
-  Future<void> _searchLocationSuggestions(String query) async {
-    if (query.trim().isEmpty) {
-      setState(() {
-        _searchSuggestions = [];
-        _showSuggestions = false;
-      });
-      return;
-    }
-
-    setState(() {
-      _isSearching = true;
-      _showSuggestions = true;
-    });
-
-    try {
-      List<SearchResult> allSuggestions = [];
-      Set<String> uniqueLocations = {}; // To avoid duplicates
-
-      // Generate multiple search variations to get more results
-      List<String> searchQueries = [
-        query,
-        "$query, India",
-        "$query, Maharashtra",
-        "$query Railway Station",
-        "$query Airport",
-        "$query Beach",
-        "$query Market",
-        "$query Mall",
-        "Mumbai $query",
-        "Thane $query",
-        "Navi Mumbai $query",
-      ];
-
-      if (kDebugMode) {
-        print("Searching for: $query");
-      }
-
-      // Search with multiple queries
-      for (String searchQuery in searchQueries) {
-        try {
-          List<Location> locations = await locationFromAddress(searchQuery);
-
-          if (kDebugMode) {
-            print("Found ${locations.length} locations for: $searchQuery");
-          }
-
-          // Process each location
-          for (Location loc in locations) {
-            try {
-              // Get detailed information
-              List<Placemark> placemarks = await placemarkFromCoordinates(
-                loc.latitude,
-                loc.longitude,
-                localeIdentifier: "en_IN",
-              );
-
-              if (placemarks.isNotEmpty) {
-                Placemark place = placemarks[0];
-
-                // Build title
-                String title = "";
-                if (place.name != null && place.name!.isNotEmpty) {
-                  title = place.name!;
-                } else if (place.locality != null &&
-                    place.locality!.isNotEmpty) {
-                  title = place.locality!;
-                } else if (place.subLocality != null &&
-                    place.subLocality!.isNotEmpty) {
-                  title = place.subLocality!;
-                } else if (place.administrativeArea != null &&
-                    place.administrativeArea!.isNotEmpty) {
-                  title = place.administrativeArea!;
-                }
-
-                // Build subtitle
-                List<String> subtitleParts = [];
-                if (place.subLocality != null &&
-                    place.subLocality!.isNotEmpty &&
-                    place.subLocality != title) {
-                  subtitleParts.add(place.subLocality!);
-                }
-                if (place.locality != null &&
-                    place.locality!.isNotEmpty &&
-                    place.locality != title) {
-                  subtitleParts.add(place.locality!);
-                }
-                if (place.administrativeArea != null &&
-                    place.administrativeArea!.isNotEmpty &&
-                    place.administrativeArea != title) {
-                  subtitleParts.add(place.administrativeArea!);
-                }
-                if (place.country != null && place.country!.isNotEmpty) {
-                  subtitleParts.add(place.country!);
-                }
-
-                String subtitle = subtitleParts.join(", ");
-
-                // Create unique key to avoid duplicates
-                String uniqueKey =
-                    "${loc.latitude.toStringAsFixed(4)},${loc.longitude.toStringAsFixed(4)}-${title.toLowerCase()}";
-
-                if (!uniqueLocations.contains(uniqueKey) && title.isNotEmpty) {
-                  uniqueLocations.add(uniqueKey);
-                  allSuggestions.add(SearchResult(
-                    title: title,
-                    subtitle: subtitle.isNotEmpty ? subtitle : "India",
-                    location: LatLng(loc.latitude, loc.longitude),
-                  ));
-
-                  if (kDebugMode) {
-                    print("Added suggestion: $title - $subtitle");
-                  }
-                }
-              }
-            } catch (e) {
-              if (kDebugMode) {
-                print("Error processing location: $e");
-              }
-            }
-
-            // Limit results to avoid too many API calls
-            if (allSuggestions.length >= 15) break;
-          }
-
-          if (allSuggestions.length >= 15) break;
-        } catch (e) {
-          if (kDebugMode) {
-            print("Error searching '$searchQuery': $e");
-          }
-          continue;
-        }
-
-        // Small delay to avoid rate limiting
-        await Future.delayed(const Duration(milliseconds: 100));
-      }
-
-      // Sort by relevance (locations that contain the search query first)
-      allSuggestions.sort((a, b) {
-        bool aContains = a.title.toLowerCase().contains(query.toLowerCase());
-        bool bContains = b.title.toLowerCase().contains(query.toLowerCase());
-        if (aContains && !bContains) return -1;
-        if (!aContains && bContains) return 1;
-        return 0;
-      });
-
-      // Limit to top 10 results
-      List<SearchResult> finalSuggestions = allSuggestions.take(10).toList();
-
-      if (kDebugMode) {
-        print("Total unique suggestions: ${finalSuggestions.length}");
-      }
-
-      setState(() {
-        _searchSuggestions = finalSuggestions;
-        _isSearching = false;
-      });
-
-      if (finalSuggestions.isEmpty) {
-        Fluttertoast.showToast(msg: "No locations found for '$query'");
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print("Search error: $e");
-      }
-      setState(() {
-        _searchSuggestions = [];
-        _isSearching = false;
-      });
-      Fluttertoast.showToast(msg: "Error searching location");
-    }
-  }
-
-  void _selectSearchResult(SearchResult result) {
-    setState(() {
-      _centerPosition = result.location;
-      _showSuggestions = false;
-      _searchController.text = result.title;
-    });
-
-    _searchFocusNode.unfocus();
-
-    if (_mapController != null) {
-      _mapController!.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(target: result.location, zoom: 18),
-        ),
-      );
-    }
-
-    _getAddressFromCoordinates(result.location);
-  }
-
-  String _currentAddress = "Loading...";
-  String _detailedAddress = "";
-  bool _isLoadingAddress = false;
-
-  Future<void> _getAddressFromCoordinates(LatLng position) async {
-    if (_isLoadingAddress) return;
-
-    setState(() {
-      _isLoadingAddress = true;
-      _currentAddress = "Getting address...";
-    });
-
-    try {
-      if (kDebugMode) {
-        print(
-            "Getting address for: ${position.latitude}, ${position.longitude}");
-      }
-
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-        localeIdentifier: "en_IN",
-      );
-
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks[0];
-
-        if (kDebugMode) {
-          print("Address found: $place");
-        }
-
-        // Build main address (like "C/209, Raheja Vihar Circular Road")
-        List<String> mainAddressParts = [];
-        if (place.name != null && place.name!.isNotEmpty) {
-          mainAddressParts.add(place.name!);
-        }
-        if (place.street != null &&
-            place.street!.isNotEmpty &&
-            place.street != place.name) {
-          mainAddressParts.add(place.street!);
-        }
-        if (place.subLocality != null && place.subLocality!.isNotEmpty) {
-          mainAddressParts.add(place.subLocality!);
-        }
-
-        String mainAddress = mainAddressParts.isNotEmpty
-            ? mainAddressParts.join(", ")
-            : (place.locality ?? "Unknown location");
-
-        // Build detailed address (like "Kandivali East, Mumbai, Maharashtra 400101")
-        List<String> detailedParts = [];
-        if (place.locality != null && place.locality!.isNotEmpty) {
-          detailedParts.add(place.locality!);
-        }
-        if (place.administrativeArea != null &&
-            place.administrativeArea!.isNotEmpty) {
-          detailedParts.add(place.administrativeArea!);
-        }
-        if (place.postalCode != null && place.postalCode!.isNotEmpty) {
-          detailedParts.add(place.postalCode!);
-        }
-
-        String detailed =
-            detailedParts.isNotEmpty ? detailedParts.join(", ") : "";
-
-        setState(() {
-          _currentAddress = mainAddress;
-          _detailedAddress = detailed;
-          _isLoadingAddress = false;
-        });
-      } else {
-        setState(() {
-          _currentAddress = "Unknown location";
-          _detailedAddress =
-              "Lat: ${position.latitude.toStringAsFixed(6)}, Lng: ${position.longitude.toStringAsFixed(6)}";
-          _isLoadingAddress = false;
-        });
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error getting address: $e");
-      }
-      setState(() {
-        _currentAddress = "Unknown location";
-        _detailedAddress =
-            "Lat: ${position.latitude.toStringAsFixed(6)}, Lng: ${position.longitude.toStringAsFixed(6)}";
-        _isLoadingAddress = false;
       });
     }
   }
@@ -579,23 +257,33 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
-                  const Text('Locality'),
+                  const Text('House / Flat No'),
                   const SizedBox(height: 10),
                   TextField(
-                    controller: _sourceLocalityController,
-                    readOnly: true,
-                    onTap: () => _pickLocation(true),
+                    controller: _sourceHouseNoController,
                     decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.grey[200],
+                      focusedBorder: OutlineInputBorder(
+                          borderSide:
+                          const BorderSide(color: Color(0xFF37b3e7)), // mediumBlue
+                          borderRadius: BorderRadius.circular(10)),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide.none,
                       ),
-                      hintText: 'Tap to select source location',
-                      suffixIcon:
-                          const Icon(Icons.location_on, color: mediumBlue),
+                      hintText: 'Enter House / Flat No',
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('Society / Area'),
+                  const SizedBox(height: 10),
+                  LocationAutocompleteField(
+                    controller: _sourceLocalityController,
+                    hintText: 'Search Society / Area',
+                    onLocationSelected: (result) {
+                      setState(() {
+                        widget.shiftData.sourceCoordinates = result.location;
+                        widget.shiftData.sourceAddress = result.title;
+                      });
+                    },
                   ),
                   // Container(
                   //   height: 50,
@@ -817,23 +505,34 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
-                  const Text('Locality'),
-                  const SizedBox(height: 4),
+                  const Text('House / Flat No'),
+                  const SizedBox(height: 10),
                   TextField(
-                    controller: _destinationLocalityController,
-                    readOnly: true,
-                    onTap: () => _pickLocation(false),
+                    controller: _destinationHouseNoController,
                     decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.grey[200],
+                      focusedBorder: OutlineInputBorder(
+                          borderSide:
+                          const BorderSide(color: Color(0xFF37b3e7)), // mediumBlue
+                          borderRadius: BorderRadius.circular(10)),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide.none,
                       ),
-                      hintText: 'Tap to select destination location',
-                      suffixIcon:
-                          const Icon(Icons.location_on, color: mediumBlue),
+                      hintText: 'Enter House / Flat No',
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('Society / Area'),
+                  const SizedBox(height: 4),
+                  LocationAutocompleteField(
+                    controller: _destinationLocalityController,
+                    hintText: 'Search Society / Area',
+                    onLocationSelected: (result) {
+                      setState(() {
+                        widget.shiftData.destinationCoordinates =
+                            result.location;
+                        widget.shiftData.destinationAddress = result.title;
+                      });
+                    },
                   ),
                   const SizedBox(height: 8),
                   // CheckboxListTile(
@@ -935,6 +634,26 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                   widget.shiftData.floorDestination = _floorDestination;
                   widget.shiftData.selectedDate = selectedDate;
                   widget.shiftData.selectedTime = selectedTime;
+
+                  // Update addresses with House No
+                  String sourceLocality = _sourceLocalityController.text;
+                  String sourceHouseNo = _sourceHouseNoController.text.trim();
+                  if (sourceHouseNo.isNotEmpty) {
+                    widget.shiftData.sourceAddress =
+                        "$sourceHouseNo, $sourceLocality";
+                  } else {
+                    widget.shiftData.sourceAddress = sourceLocality;
+                  }
+
+                  String destLocality = _destinationLocalityController.text;
+                  String destHouseNo =
+                      _destinationHouseNoController.text.trim();
+                  if (destHouseNo.isNotEmpty) {
+                    widget.shiftData.destinationAddress =
+                        "$destHouseNo, $destLocality";
+                  } else {
+                    widget.shiftData.destinationAddress = destLocality;
+                  }
 
                   // Navigate to inventory screen if coming from subcategory
                   if (widget.navigateToInventory) {

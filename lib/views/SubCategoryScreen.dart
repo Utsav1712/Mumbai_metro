@@ -5,14 +5,11 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:new_packers_application/lib/constant/app_color.dart';
+import '../widgets/location_autocomplete_field.dart';
 import 'package:new_packers_application/lib/constant/app_formatter.dart';
 import 'package:new_packers_application/lib/constant/app_strings.dart';
 
-import '../lib/views/map_picker_screen.dart';
 import '../models/ServiceEnquiryData.dart';
-import 'ServiceSelectionScreen.dart';
 import 'ThankYouScreen.dart';
 import 'TransportationFormScreen.dart';
 import '../lib/views/location_selection_screen.dart';
@@ -378,6 +375,8 @@ class _ServiceFormScreenWithCoordinateState
 
   final _pickupLocationController = TextEditingController();
   final _destinationLocationController = TextEditingController();
+  final _pickupHouseNoController = TextEditingController();
+  final _destinationHouseNoController = TextEditingController();
 
   DateTime? _selectedDate;
   LatLng? _selectedLocation;
@@ -465,36 +464,6 @@ class _ServiceFormScreenWithCoordinateState
   //   }
   // }
 
-  Future<void> _pickLocation(String type) async {
-    setState(() {
-      _locationType = type;
-    });
-
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const MapPickerScreen()),
-    );
-
-    if (result != null && result is Map) {
-      setState(() {
-        if (type == 'pickup') {
-          _pickupLocationController.text =
-              result['address'] ?? 'Unknown location';
-          _pickupCoordinates = result['coordinates'];
-        } else {
-          _destinationLocationController.text =
-              result['address'] ?? 'Unknown location';
-          _destinationCoordinates = result['coordinates'];
-        }
-      });
-      Fluttertoast.showToast(
-          msg:
-              "${type == 'pickup' ? 'Pickup' : 'Destination'} location selected successfully");
-    } else {
-      Fluttertoast.showToast(msg: "No location selected");
-    }
-  }
-
   Future<ServiceEnquiryResponse?> _submitServiceEnquiry() async {
     try {
       const String apiUrl =
@@ -505,17 +474,25 @@ class _ServiceFormScreenWithCoordinateState
       request.fields['customer_id'] = widget.customerId?.toString() ?? '0';
       request.fields['service_name'] = widget.subCategoryName;
       request.fields['service_description'] = 'NONE';
-      request.fields['service_location'] =
-          _pickupLocationController.text.trim();
+      String pickupHouse = _pickupHouseNoController.text.trim();
+      String pickupArea = _pickupLocationController.text.trim();
+      String fullPickupAddress =
+          pickupHouse.isNotEmpty ? "$pickupHouse, $pickupArea" : pickupArea;
+
+      String destHouse = _destinationHouseNoController.text.trim();
+      String destArea = _destinationLocationController.text.trim();
+      String fullDestAddress =
+          destHouse.isNotEmpty ? "$destHouse, $destArea" : destArea;
+
+      request.fields['service_location'] = fullPickupAddress;
       request.fields['flat_no'] = _flatNumberController.text.trim();
       request.fields['notes'] = _notesController.text.trim();
       request.fields['service_date'] = _selectedDate != null
           ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
           : '';
 
-      request.fields['pickup_location'] = _pickupLocationController.text.trim();
-      request.fields['drop_location'] =
-          _destinationLocationController.text.trim();
+      request.fields['pickup_location'] = fullPickupAddress;
+      request.fields['drop_location'] = fullDestAddress;
       if (_pickupCoordinates != null) {
         request.fields['pickup_lat'] = _pickupCoordinates!.latitude.toString();
         request.fields['pickup_lng'] = _pickupCoordinates!.longitude.toString();
@@ -758,7 +735,7 @@ class _ServiceFormScreenWithCoordinateState
                                 const SizedBox(height: 8),
                               if (hasDescription)
                                 Text(
-                                  widget.subCategoryDesc??"",
+                                  widget.subCategoryDesc ?? "",
                                   style: const TextStyle(
                                     fontFamily: 'Poppins',
                                     fontSize: 14,
@@ -1024,61 +1001,64 @@ class _ServiceFormScreenWithCoordinateState
                       const SizedBox(height: 16),
 
                       // Pickup Location
+                      // Pickup Location
+                      const Text('Pickup Location',
+                          style: TextStyle(
+                              color: darkBlue,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
                       TextFormField(
-                        controller: _pickupLocationController,
-                        readOnly: true,
+                        controller: _pickupHouseNoController,
                         decoration: InputDecoration(
-                          labelText: 'Pickup Location',
+                          labelText: 'House / Flat No',
                           labelStyle: const TextStyle(color: darkBlue),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                              borderRadius: BorderRadius.circular(10)),
                           focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(color: mediumBlue),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.location_on,
-                                color: mediumBlue),
-                            onPressed: () => _pickLocation('pickup'),
-                          ),
+                              borderSide: const BorderSide(color: mediumBlue),
+                              borderRadius: BorderRadius.circular(10)),
                         ),
-                        onTap: () => _pickLocation('pickup'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please select pickup location';
-                          }
-                          return null;
+                      ),
+                      const SizedBox(height: 10),
+                      LocationAutocompleteField(
+                        controller: _pickupLocationController,
+                        hintText: 'Search Pickup Society / Area',
+                        onLocationSelected: (result) {
+                          setState(() {
+                            _pickupCoordinates = result.location;
+                          });
                         },
                       ),
                       const SizedBox(height: 16),
 
                       // Destination Location
+                      const Text('Destination Location',
+                          style: TextStyle(
+                              color: darkBlue,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
                       TextFormField(
-                        controller: _destinationLocationController,
-                        readOnly: true,
+                        controller: _destinationHouseNoController,
                         decoration: InputDecoration(
-                          labelText: 'Destination Location',
+                          labelText: 'House / Flat No',
                           labelStyle: const TextStyle(color: darkBlue),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                              borderRadius: BorderRadius.circular(10)),
                           focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(color: mediumBlue),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.location_on,
-                                color: mediumBlue),
-                            onPressed: () => _pickLocation('destination'),
-                          ),
+                              borderSide: const BorderSide(color: mediumBlue),
+                              borderRadius: BorderRadius.circular(10)),
                         ),
-                        onTap: () => _pickLocation('destination'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please select destination location';
-                          }
-                          return null;
+                      ),
+                      const SizedBox(height: 10),
+                      LocationAutocompleteField(
+                        controller: _destinationLocationController,
+                        hintText: 'Search Destination Society / Area',
+                        onLocationSelected: (result) {
+                          setState(() {
+                            _destinationCoordinates = result.location;
+                          });
                         },
                       ),
                       const SizedBox(height: 16),
@@ -1169,6 +1149,7 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _serviceDescriptionController = TextEditingController();
   final _serviceLocationController = TextEditingController();
+  final _serviceHouseNoController = TextEditingController();
   final _flatNumberController = TextEditingController();
   DateTime? _selectedDate;
   LatLng? _selectedLocation;
@@ -1206,24 +1187,6 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
     }
   }
 
-  Future<void> _pickLocation() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const MapPickerScreen()),
-    );
-
-    if (result != null && result is Map) {
-      setState(() {
-        _serviceLocationController.text =
-            result['address'] ?? 'Unknown location';
-        _selectedLocation = result['coordinates'];
-      });
-      Fluttertoast.showToast(msg: "Location selected successfully");
-    } else {
-      Fluttertoast.showToast(msg: "No location selected");
-    }
-  }
-
   Future<ServiceEnquiryResponse?> _submitServiceEnquiry() async {
     try {
       const String apiUrl =
@@ -1237,8 +1200,11 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
           _serviceDescriptionController.text.isNotEmpty
               ? _serviceDescriptionController.text.trim()
               : 'NONE';
-      request.fields['service_location'] =
-          _serviceLocationController.text.trim();
+      String houseNo = _flatNumberController.text.trim();
+      String area = _serviceLocationController.text.trim();
+      String fullAddress = houseNo.isNotEmpty ? "$houseNo, $area" : area;
+
+      request.fields['service_location'] = fullAddress;
       request.fields['flat_no'] = _flatNumberController.text.trim();
       request.fields['service_date'] = _selectedDate != null
           ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
@@ -1251,8 +1217,7 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
 
       //Field which was null
 
-      request.fields['pickup_location'] =
-          _serviceLocationController.text.trim();
+      request.fields['pickup_location'] = fullAddress;
       request.fields['drop_location'] = 'NONE';
 
       if (_selectedLocation != null) {
@@ -1496,31 +1461,22 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
+                      // Service Location
+                      const Text('Service Location',
+                          style: TextStyle(
+                              color: darkBlue,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
+                      LocationAutocompleteField(
                         controller: _serviceLocationController,
-                        readOnly: true,
-                        decoration: InputDecoration(
-                          labelText: 'Service Location',
-                          labelStyle: const TextStyle(color: darkBlue),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(color: mediumBlue),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.location_on,
-                                color: mediumBlue),
-                            onPressed: _pickLocation,
-                          ),
-                        ),
-                        onTap: _pickLocation,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please select a service location';
-                          }
-                          return null;
+                        hintText: 'Search Service Society / Area',
+                        onLocationSelected: (result) {
+                          setState(() {
+                            _selectedLocation = result.location;
+                            _serviceLocationController.text = result.title;
+                          });
                         },
                       ),
                       const SizedBox(height: 16),
