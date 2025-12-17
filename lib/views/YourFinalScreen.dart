@@ -23,6 +23,7 @@ class YourFinalScreen extends StatefulWidget {
 
 class _YourFinalScreenState extends State<YourFinalScreen> {
   bool _isSubmitting = false;
+  int? _submittedEnquiryId; // Store the ID of the created enquiry
 
   // String _formatProductsForAPI() {
   //   List<Map<String, String>> productsList = widget.shiftData.selectedProducts
@@ -58,33 +59,7 @@ class _YourFinalScreenState extends State<YourFinalScreen> {
       const String apiUrl = 'https://54kidsstreet.org/api/enquiry';
 
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
-
-      request.fields['customer_id'] = widget.shiftData.customerId?.toString() ?? '0';
-      request.fields['pickup_location'] = widget.shiftData.sourceAddress ?? '';
-      request.fields['drop_location'] = widget.shiftData.destinationAddress ?? '';
-      request.fields['flat_shop_no'] = '${widget.shiftData.floorSource}F';
-      request.fields['shipping_date_time'] = '${widget.shiftData.selectedDate} ${widget.shiftData.selectedTime}';
-      request.fields['floor_number'] = /*_formatFloorNumber(widget.shiftData.floorSource);*/ widget.shiftData.floorSource.toString();
-      request.fields['destination_floor_number'] = /*_formatFloorNumber(widget.shiftData.floorSource);*/ widget.shiftData.floorSource.toString();
-      request.fields['pickup_services_lift'] = /*widget.shiftData.serviceLiftSource ? 'YES' : 'NO'*/ widget.shiftData.floorDestination.toString();
-      request.fields['drop_services_lift'] = /*widget.shiftData.serviceLiftDestination ? 'YES' : 'NO'*/ widget.shiftData.serviceLiftSource ? '0' : '1';
-      request.fields.addAll(_formatProductsForAPI());
-      request.fields['km_distance'] = '0';
-
-      if (widget.shiftData.sourceCoordinates != null) {
-        request.fields['pickup_latitude'] = widget.shiftData.sourceCoordinates!.latitude.toString();
-        request.fields['pickup_longitude'] = widget.shiftData.sourceCoordinates!.longitude.toString();
-      }
-
-      if (widget.shiftData.destinationCoordinates != null) {
-        request.fields['drop_latitude'] = widget.shiftData.destinationCoordinates!.latitude.toString();
-        request.fields['drop_longitude'] = widget.shiftData.destinationCoordinates!.longitude.toString();
-      }
-
-      request.headers.addAll({
-        'Accept': 'application/json',
-        'Content-Type': 'multipart/form-data',
-      });
+      _populateRequestFields(request);
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -104,8 +79,73 @@ class _YourFinalScreenState extends State<YourFinalScreen> {
     }
   }
 
+  Future<EnquiryResponse?> _updateEnquiry(int enquiryId) async {
+    try {
+      final String apiUrl =
+          'http://127.0.0.1:8000/api/enquiry-update/$enquiryId';
+
+      var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
+      _populateRequestFields(request);
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final jsonData = json.decode(response.body);
+        print('Update Res---->>${response.body}');
+        return EnquiryResponse.fromJson(jsonData);
+      } else {
+        print('Failed to update enquiry: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Error updating enquiry: $e');
+      return null;
+    }
+  }
+
+  void _populateRequestFields(http.MultipartRequest request) {
+    request.fields['customer_id'] =
+        widget.shiftData.customerId?.toString() ?? '0';
+    request.fields['pickup_location'] = widget.shiftData.sourceAddress ?? '';
+    request.fields['drop_location'] = widget.shiftData.destinationAddress ?? '';
+    request.fields['flat_shop_no'] = '${widget.shiftData.floorSource}F';
+    request.fields['shipping_date_time'] =
+        '${widget.shiftData.selectedDate} ${widget.shiftData.selectedTime}';
+    request.fields['floor_number'] = widget.shiftData.floorSource.toString();
+    request.fields['destination_floor_number'] =
+        widget.shiftData.floorSource.toString();
+    request.fields['pickup_services_lift'] =
+        widget.shiftData.floorDestination.toString();
+    request.fields['drop_services_lift'] =
+        widget.shiftData.serviceLiftSource ? '0' : '1';
+    request.fields.addAll(_formatProductsForAPI());
+    request.fields['km_distance'] = '0';
+
+    if (widget.shiftData.sourceCoordinates != null) {
+      request.fields['pickup_latitude'] =
+          widget.shiftData.sourceCoordinates!.latitude.toString();
+      request.fields['pickup_longitude'] =
+          widget.shiftData.sourceCoordinates!.longitude.toString();
+    }
+
+    if (widget.shiftData.destinationCoordinates != null) {
+      request.fields['drop_latitude'] =
+          widget.shiftData.destinationCoordinates!.latitude.toString();
+      request.fields['drop_longitude'] =
+          widget.shiftData.destinationCoordinates!.longitude.toString();
+    }
+
+    request.headers.addAll({
+      'Accept': 'application/json',
+      'Content-Type': 'multipart/form-data',
+    });
+  }
+
   void _handleSubmit() async {
-    if (widget.shiftData.customerId == null || widget.shiftData.customerId == 0) {
+    if (widget.shiftData.customerId == null ||
+        widget.shiftData.customerId == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Invalid customer ID. Please log in again.'),
@@ -121,19 +161,31 @@ class _YourFinalScreenState extends State<YourFinalScreen> {
     });
 
     try {
-      EnquiryResponse? response = await _submitEnquiry();
+      EnquiryResponse? response;
+
+      if (_submittedEnquiryId == null) {
+        // Create new enquiry
+        response = await _submitEnquiry();
+        if (response != null && response.status && response.data != null) {
+          _submittedEnquiryId = response.data!.id; // Store ID for updates
+        }
+      } else {
+        // Update existing enquiry
+        response = await _updateEnquiry(_submittedEnquiryId!);
+      }
 
       setState(() {
         _isSubmitting = false;
       });
 
       if (response != null && response.status) {
-
-        log('Total Payment--->>${response.data?.amount??0}');
-        Navigator.pushReplacement(
+        log('Total Payment--->>${response.data?.amount ?? 0}');
+        Navigator.push(
+          // Changed to push to allow back navigation
           context,
           MaterialPageRoute(
-            builder: (context) => EnquiryThankYouScreen(enquiryResponse: response),
+            builder: (context) =>
+                EnquiryThankYouScreen(enquiryResponse: response!),
           ),
           // MaterialPageRoute(
           //   builder: (context) => EnquiryBookingConfirmationWithAmount(enquiryResponse: response),
@@ -224,37 +276,55 @@ class _YourFinalScreenState extends State<YourFinalScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          ...widget.shiftData.selectedProducts.map((p) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 2),
-                            child: Text(
-                              "• ${p.productName}: ${p.count}",
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: darkBlue,
-                                fontFamily: 'Poppins',
-                              ),
-                            ),
-                          )),
+                          ...widget.shiftData.selectedProducts
+                              .map((p) => Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 2),
+                                    child: Text(
+                                      "• ${p.productName}: ${p.count}",
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: darkBlue,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                  )),
                         ],
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildInfoCard("Source Location",
-                        widget.shiftData.sourceAddress ?? "Location not selected"),
-                    _buildInfoCard("Destination Location",
-                        widget.shiftData.destinationAddress ?? "Location not selected"),
+                    _buildInfoCard(
+                        "Source Location",
+                        widget.shiftData.sourceAddress ??
+                            "Location not selected"),
+                    _buildInfoCard(
+                        "Destination Location",
+                        widget.shiftData.destinationAddress ??
+                            "Location not selected"),
                     _buildInfoCard("Source Floor",
                         _formatFloorNumber(widget.shiftData.floorSource)),
                     _buildInfoCard("Destination Floor",
                         _formatFloorNumber(widget.shiftData.floorDestination)),
-                    _buildInfoCard("Normal Lift Source",
-                        widget.shiftData.normalLiftSource ? "Available" : "Not Available"),
-                    _buildInfoCard("Service Lift Source",
-                        widget.shiftData.serviceLiftSource ? "Available" : "Not Available"),
-                    _buildInfoCard("Normal Lift Destination",
-                        widget.shiftData.normalLiftDestination ? "Available" : "Not Available"),
-                    _buildInfoCard("Service Lift Destination",
-                        widget.shiftData.serviceLiftDestination ? "Available" : "Not Available"),
+                    _buildInfoCard(
+                        "Normal Lift Source",
+                        widget.shiftData.normalLiftSource
+                            ? "Available"
+                            : "Not Available"),
+                    _buildInfoCard(
+                        "Service Lift Source",
+                        widget.shiftData.serviceLiftSource
+                            ? "Available"
+                            : "Not Available"),
+                    _buildInfoCard(
+                        "Normal Lift Destination",
+                        widget.shiftData.normalLiftDestination
+                            ? "Available"
+                            : "Not Available"),
+                    _buildInfoCard(
+                        "Service Lift Destination",
+                        widget.shiftData.serviceLiftDestination
+                            ? "Available"
+                            : "Not Available"),
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -272,18 +342,18 @@ class _YourFinalScreenState extends State<YourFinalScreen> {
                   ),
                   child: _isSubmitting
                       ? const CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  )
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        )
                       : const Text(
-                    "Submit Enquiry",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
+                          "Submit Enquiry",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 20),

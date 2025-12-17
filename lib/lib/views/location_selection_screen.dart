@@ -263,8 +263,8 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                     controller: _sourceHouseNoController,
                     decoration: InputDecoration(
                       focusedBorder: OutlineInputBorder(
-                          borderSide:
-                          const BorderSide(color: Color(0xFF37b3e7)), // mediumBlue
+                          borderSide: const BorderSide(
+                              color: Color(0xFF37b3e7)), // mediumBlue
                           borderRadius: BorderRadius.circular(10)),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -511,8 +511,8 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                     controller: _destinationHouseNoController,
                     decoration: InputDecoration(
                       focusedBorder: OutlineInputBorder(
-                          borderSide:
-                          const BorderSide(color: Color(0xFF37b3e7)), // mediumBlue
+                          borderSide: const BorderSide(
+                              color: Color(0xFF37b3e7)), // mediumBlue
                           borderRadius: BorderRadius.circular(10)),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -657,7 +657,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
 
                   // Navigate to inventory screen if coming from subcategory
                   if (widget.navigateToInventory) {
-                    Navigator.pushReplacement(
+                    Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => ServiceSelectionScreen(
