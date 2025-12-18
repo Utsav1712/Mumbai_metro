@@ -43,11 +43,17 @@ class ContactUsScreen extends StatelessWidget {
   }
 
   // Helper for WhatsApp chat
-  void _openWhatsApp(String phoneNumber) {
+  Future<void> _openWhatsApp(String phoneNumber) async {
     if (phoneNumber.isEmpty) return;
-    final cleanNumber = phoneNumber.replaceAll(RegExp(r'[+\s]'), '');
-    final whatsappUrl = 'whatsapp://send?phone=$cleanNumber';
-    _launchUrl(whatsappUrl);
+    // Remove all non-digit characters to get a clean number (e.g., 919920718084)
+    final cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
+    // Using wa.me link is more reliable and supports web fallback
+    final whatsappUrl = 'https://wa.me/$cleanNumber';
+
+    final uri = Uri.parse(whatsappUrl);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      debugPrint('Could not launch $whatsappUrl');
+    }
   }
 
   // Helper for sending email
@@ -94,7 +100,16 @@ class ContactUsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    "MUMBAI METRO\nPACKERS AND MOVERS",
+                    "MUMBAI METRO",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColor.darkBlue,
+                    ),
+                  ),
+                  Text(
+                    "PACKERS AND MOVERS",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 12,
@@ -124,35 +139,27 @@ class ContactUsScreen extends StatelessWidget {
             const SizedBox(height: 30),
 
             // --- Sales and Support Cards ---
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Sales Card (using contact1/email)
-                Expanded(
-                  child: _buildContactCard(
-                    context,
-                    title: 'Sales',
-                    phone: contactData.contact1,
-                    // Using contact1 for Sales phone
-                    email: contactData.email,
-                    // Using email for Sales email
-                    primaryColor: AppColor.darkBlue,
-                  ),
-                ),
-                const SizedBox(width: 15),
-                // Support Card (using contact2/email2)
-                Expanded(
-                  child: _buildContactCard(
-                    context,
-                    title: 'Support',
-                    phone: contactData.contact2,
-                    // Using contact2 for Support phone
-                    email: contactData.email2,
-                    // Using email2 for Support email
-                    primaryColor: AppColor.darkBlue,
-                  ),
-                ),
-              ],
+            // --- Sales and Support Cards (Vertical Stack) ---
+            _buildNewContactCard(
+              context,
+              title: 'Sales',
+              icon: Icons.support_agent, // Or appropriate icon
+              phone: contactData.contact1,
+              email: contactData.email,
+              emailLabel: 'Sales email ID',
+              primaryColor: AppColor.darkBlue,
+            ),
+
+            const SizedBox(height: 20),
+
+            _buildNewContactCard(
+              context,
+              title: 'Support',
+              icon: Icons.headset_mic, // Or appropriate icon
+              phone: contactData.contact2,
+              email: contactData.email2,
+              emailLabel: 'Support email ID',
+              primaryColor: AppColor.darkBlue,
             ),
 
             const SizedBox(height: 40),
@@ -287,113 +294,148 @@ class ContactUsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContactCard(
+  Widget _buildNewContactCard(
     BuildContext context, {
     required String title,
+    required IconData icon,
     required String phone,
     required String email,
+    required String emailLabel,
     required Color primaryColor,
   }) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Icon(Icons.call, color: primaryColor, size: 20),
-            const SizedBox(width: 5),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: primaryColor,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        // Phone Button
-        _buildPhoneEmailButton(
-          icon: Icons.phone,
-          text: phone,
-          backgroundColor: primaryColor,
-          onPressed: () => _makeCall(phone),
-        ),
-        const SizedBox(height: 15),
-        // Email Link
-        InkWell(
-          onTap: () => _sendEmail(email),
-          child: Row(
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header: Icon + Title
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(
-                child: Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: '${title} email ID\n',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      TextSpan(
-                        text: email,
-                        style: const TextStyle(
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: primaryColor,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
+              Icon(icon, color: primaryColor, size: 28),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
                 ),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 15),
-        // WhatsApp Button
-        _buildPhoneEmailButton(
-          icon: Icons.chat, // Using chat icon for WhatsApp
-          text: 'WhatsApp Chat',
-          backgroundColor: Colors.green, // WhatsApp color
-          onPressed: () => _openWhatsApp(phone),
-        ),
-      ],
-    );
-  }
+          const SizedBox(height: 20),
 
-  Widget _buildPhoneEmailButton({
-    required IconData icon,
-    required String text,
-    required Color backgroundColor,
-    required VoidCallback onPressed,
-  }) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        elevation: 2,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: Colors.white, size: 18),
-          const SizedBox(width: 5),
-          Flexible(
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-              ),
-              overflow: TextOverflow.ellipsis,
+          // Phone Number Container
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F5F5), // Light grey background
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
             ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.call, color: primaryColor, size: 20),
+                const SizedBox(width: 10),
+                Text(
+                  phone.isNotEmpty ? phone : '+91 0000000000',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: primaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 15),
+
+          // Email Section
+          Text(
+            emailLabel,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 4),
+          InkWell(
+            onTap: () => _sendEmail(email),
+            child: Text(
+              email,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: primaryColor,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Buttons Row: Call Now & WhatsApp
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => _makeCall(phone),
+                  icon: const Icon(Icons.call, color: Colors.white),
+                  label: const Text(
+                    'Call Now',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => _openWhatsApp(phone),
+                  icon: const Icon(Icons.chat_bubble,
+                      color: Colors
+                          .white), // Using chat_bubble for generic chat icon
+                  label: const Text(
+                    'WhatsApp',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF25D366), // WhatsApp Green
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

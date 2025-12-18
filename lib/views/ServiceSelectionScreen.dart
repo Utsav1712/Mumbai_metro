@@ -184,7 +184,6 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen> {
             widget.shiftData!.floorDestination.toString();
       }
 
-
       request.headers.addAll({
         'Accept': 'application/json',
         'Content-Type': 'multipart/form-data',
@@ -234,7 +233,7 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen> {
       });
 
       if (response != null && response.status) {
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) =>
@@ -497,7 +496,8 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen> {
                     } else {
                       // Fallback to old behavior if no shiftData
                       final shiftData = ShiftData(
-                        subCategoryDesc: widget.shiftData?.subCategoryDesc??'',
+                        subCategoryDesc:
+                            widget.shiftData?.subCategoryDesc ?? '',
                         serviceId: 0,
                         serviceName: 'Multiple Services',
                         selectedDate: '',
