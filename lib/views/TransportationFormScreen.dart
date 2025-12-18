@@ -42,7 +42,7 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
   final _pickupLocationController = TextEditingController();
   final _destinationLocationController = TextEditingController();
   final _pickupHouseNoController = TextEditingController();
-  final _destinationHouseNoController = TextEditingController();
+
   final _flatNumberController = TextEditingController();
   final _vehicleModelController = TextEditingController();
 
@@ -134,10 +134,8 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
       String fullPickupAddress =
           pickupHouse.isNotEmpty ? "$pickupHouse, $pickupArea" : pickupArea;
 
-      String destHouse = _destinationHouseNoController.text.trim();
       String destArea = _destinationLocationController.text.trim();
-      String fullDestAddress =
-          destHouse.isNotEmpty ? "$destHouse, $destArea" : destArea;
+      String fullDestAddress = destArea;
 
       request.fields['service_location'] = fullPickupAddress;
       request.fields['service_description'] = 'NONE';
@@ -593,19 +591,7 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
                               fontSize: 16,
                               fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _destinationHouseNoController,
-                        decoration: InputDecoration(
-                          labelText: 'House / Flat No',
-                          labelStyle: const TextStyle(color: darkBlue),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(color: mediumBlue),
-                              borderRadius: BorderRadius.circular(10)),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
+
                       LocationAutocompleteField(
                         controller: _destinationLocationController,
                         hintText: 'Search Destination Society / Area',

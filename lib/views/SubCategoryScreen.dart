@@ -376,7 +376,6 @@ class _ServiceFormScreenWithCoordinateState
   final _pickupLocationController = TextEditingController();
   final _destinationLocationController = TextEditingController();
   final _pickupHouseNoController = TextEditingController();
-  final _destinationHouseNoController = TextEditingController();
 
   DateTime? _selectedDate;
   LatLng? _selectedLocation;
@@ -479,10 +478,8 @@ class _ServiceFormScreenWithCoordinateState
       String fullPickupAddress =
           pickupHouse.isNotEmpty ? "$pickupHouse, $pickupArea" : pickupArea;
 
-      String destHouse = _destinationHouseNoController.text.trim();
       String destArea = _destinationLocationController.text.trim();
-      String fullDestAddress =
-          destHouse.isNotEmpty ? "$destHouse, $destArea" : destArea;
+      String fullDestAddress = destArea;
 
       request.fields['service_location'] = fullPickupAddress;
       request.fields['flat_no'] = _flatNumberController.text.trim();
@@ -1039,19 +1036,7 @@ class _ServiceFormScreenWithCoordinateState
                               fontSize: 16,
                               fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _destinationHouseNoController,
-                        decoration: InputDecoration(
-                          labelText: 'House / Flat No',
-                          labelStyle: const TextStyle(color: darkBlue),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(color: mediumBlue),
-                              borderRadius: BorderRadius.circular(10)),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
+
                       LocationAutocompleteField(
                         controller: _destinationLocationController,
                         hintText: 'Search Destination Society / Area',

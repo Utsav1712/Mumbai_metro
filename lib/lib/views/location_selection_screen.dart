@@ -33,8 +33,6 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
       TextEditingController();
   final TextEditingController _destinationLocalityController =
       TextEditingController();
-  final TextEditingController _destinationHouseNoController =
-      TextEditingController();
 
   // bool _normalLiftSource = false;
   bool _serviceLiftSource = false;
@@ -507,19 +505,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                   const SizedBox(height: 8),
                   const Text('House / Flat No'),
                   const SizedBox(height: 10),
-                  TextField(
-                    controller: _destinationHouseNoController,
-                    decoration: InputDecoration(
-                      focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                              color: Color(0xFF37b3e7)), // mediumBlue
-                          borderRadius: BorderRadius.circular(10)),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      hintText: 'Enter House / Flat No',
-                    ),
-                  ),
+
                   const SizedBox(height: 16),
                   const Text('Society / Area'),
                   const SizedBox(height: 4),
@@ -646,14 +632,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                   }
 
                   String destLocality = _destinationLocalityController.text;
-                  String destHouseNo =
-                      _destinationHouseNoController.text.trim();
-                  if (destHouseNo.isNotEmpty) {
-                    widget.shiftData.destinationAddress =
-                        "$destHouseNo, $destLocality";
-                  } else {
-                    widget.shiftData.destinationAddress = destLocality;
-                  }
+                  widget.shiftData.destinationAddress = destLocality;
 
                   // Navigate to inventory screen if coming from subcategory
                   if (widget.navigateToInventory) {
