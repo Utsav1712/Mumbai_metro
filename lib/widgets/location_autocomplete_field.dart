@@ -215,8 +215,9 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
                 boxShadow: const [
                   BoxShadow(
                       color: Colors.black12,
+                      spreadRadius: 4,
                       blurRadius: 4,
-                      offset: Offset(0, 2))
+                      offset: Offset(0, 0))
                 ]),
             child: _searchSuggestions.isEmpty && !_isSearching
                 ? const SizedBox() // Should not happen if _showSuggestions is false when empty
