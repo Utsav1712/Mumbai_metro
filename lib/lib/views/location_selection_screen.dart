@@ -503,10 +503,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
-                  const Text('House / Flat No'),
-                  const SizedBox(height: 10),
 
-                  const SizedBox(height: 16),
                   const Text('Society / Area'),
                   const SizedBox(height: 4),
                   LocationAutocompleteField(

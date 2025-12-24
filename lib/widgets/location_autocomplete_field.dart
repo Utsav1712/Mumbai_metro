@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:new_packers_application/lib/constant/app_color.dart';
-import '../models/search_result.dart'; // Ensure correct import path relative to widgets dir or package
+import '../models/search_result.dart';
+import '../services/google_places_service.dart';
 
 class LocationAutocompleteField extends StatefulWidget {
   final TextEditingController controller;
@@ -24,12 +22,13 @@ class LocationAutocompleteField extends StatefulWidget {
 }
 
 class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
+  // TODO: Replace with your API key
+  final _placesService =
+      GooglePlacesService(apiKey: 'AIzaSyD89e_jQ_xoTxPKqwkks0Z0PbtPCNkHKaE');
+
   bool _isSearching = false;
   List<SearchResult> _searchSuggestions = [];
   bool _showSuggestions = false;
-
-  // Debounce logic can be added here or relied on parent/manual delay
-  // For simplicity and matching existing logic, using logic similar to previous implementation
 
   Future<void> _searchLocationSuggestions(String query) async {
     if (query.trim().isEmpty) {
@@ -46,98 +45,20 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
       if (mounted) {
         setState(() {
           _isSearching = true;
-          _showSuggestions = true; // Show helper/loading
+          _showSuggestions = true;
         });
       }
 
-      List<Location> locations = await locationFromAddress(query);
-      List<SearchResult> allSuggestions = [];
+      final predictions = await _placesService.autocomplete(query);
 
-      Set<String> thisSearchUniqueLocations = {};
-
-      for (Location loc in locations) {
-        try {
-          List<Placemark> placemarks = await placemarkFromCoordinates(
-            loc.latitude,
-            loc.longitude,
-            localeIdentifier: "en_IN",
-          );
-
-          if (placemarks.isNotEmpty) {
-            Placemark place = placemarks[0];
-
-            List<String> titleParts = [];
-            if (place.name != null && place.name!.isNotEmpty)
-              titleParts.add(place.name!);
-            if (place.street != null && place.street!.isNotEmpty)
-              titleParts.add(place.street!);
-            if (place.subThoroughfare != null &&
-                place.subThoroughfare!.isNotEmpty)
-              titleParts.add(place.subThoroughfare!);
-            if (place.thoroughfare != null && place.thoroughfare!.isNotEmpty)
-              titleParts.add(place.thoroughfare!);
-            if (place.subLocality != null && place.subLocality!.isNotEmpty)
-              titleParts.add(place.subLocality!);
-            if (place.locality != null && place.locality!.isNotEmpty)
-              titleParts.add(place.locality!);
-            if (place.subAdministrativeArea != null &&
-                place.subAdministrativeArea!.isNotEmpty)
-              titleParts.add(place.subAdministrativeArea!);
-            if (place.administrativeArea != null &&
-                place.administrativeArea!.isNotEmpty)
-              titleParts.add(place.administrativeArea!);
-            if (place.postalCode != null && place.postalCode!.isNotEmpty)
-              titleParts.add(place.postalCode!);
-            String country = "";
-            if (place.country != null && place.country!.isNotEmpty) {
-              country = place.country!;
-              titleParts.add(place.country!);
-            }
-            if (place.isoCountryCode != null &&
-                place.isoCountryCode!.isNotEmpty)
-              titleParts.add(place.isoCountryCode!);
-
-            String title = titleParts.toSet().join(", ");
-
-            List<String> subtitleParts = [];
-            if (place.subLocality != null &&
-                place.subLocality!.isNotEmpty &&
-                place.subLocality != title) {
-              subtitleParts.add(place.subLocality!);
-            }
-            if (place.locality != null &&
-                place.locality!.isNotEmpty &&
-                place.locality != title) {
-              subtitleParts.add(place.locality!);
-            }
-            if (place.administrativeArea != null &&
-                place.administrativeArea!.isNotEmpty &&
-                place.administrativeArea != title) {
-              subtitleParts.add(place.administrativeArea!);
-            }
-            if (country.isNotEmpty) {
-              subtitleParts.add(country);
-            }
-
-            String subtitle = subtitleParts.join(", ");
-            // Use coordinate + name as key to deduplicate
-            String uniqueKey =
-                "${loc.latitude.toStringAsFixed(4)},${loc.longitude.toStringAsFixed(4)}-${title.toLowerCase()}";
-
-            if (!thisSearchUniqueLocations.contains(uniqueKey) &&
-                title.isNotEmpty) {
-              thisSearchUniqueLocations.add(uniqueKey);
-              allSuggestions.add(SearchResult(
-                title: title,
-                subtitle: subtitle.isNotEmpty ? subtitle : "Location",
-                location: LatLng(loc.latitude, loc.longitude),
-              ));
-            }
-          }
-        } catch (e) {
-          debugPrint("Error getting placemark for location: $e");
-        }
-      }
+      List<SearchResult> allSuggestions = predictions
+          .map((p) => SearchResult(
+                title: p.mainText.isNotEmpty ? p.mainText : p.description,
+                subtitle: p.secondaryText,
+                placeId: p.placeId,
+                location: null,
+              ))
+          .toList();
 
       if (mounted) {
         setState(() {
@@ -157,21 +78,40 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
     }
   }
 
-  void _selectSearchResult(SearchResult result) {
+  Future<void> _selectSearchResult(SearchResult result) async {
     widget.controller.text = result.title;
-    widget.onLocationSelected(result);
+
+    // Hide suggestions immediately
     setState(() {
       _showSuggestions = false;
       _searchSuggestions = [];
     });
+
+    if (result.placeId != null) {
+      try {
+        final latLng = await _placesService.getPlaceDetails(result.placeId!);
+        if (latLng != null) {
+          final fullResult = SearchResult(
+              title: result.title,
+              subtitle: result.subtitle,
+              placeId: result.placeId,
+              location: latLng);
+
+          widget.onLocationSelected(fullResult);
+        }
+      } catch (e) {
+        debugPrint("Error fetching details: $e");
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Assuming constants like whiteColor, mediumBlue, darkBlue are available or passed.
-    // Using hardcoded standard ones or importing from existing constants if possible.
-    // I need to import app_color.dart. Assuming path based on other files.
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -191,26 +131,24 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
           decoration: InputDecoration(
             hintText: widget.hintText,
             filled: true,
-            fillColor: const Color(0xFFf7f7f7), // whiteColor
+            fillColor: const Color(0xFFf7f7f7),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             focusedBorder: OutlineInputBorder(
-                borderSide:
-                    const BorderSide(color: Color(0xFF37b3e7)), // mediumBlue
+                borderSide: const BorderSide(color: Color(0xFF37b3e7)),
                 borderRadius: BorderRadius.circular(10)),
             suffixIcon: _isSearching
                 ? const Padding(
                     padding: EdgeInsets.all(12),
                     child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(Icons.search,
-                    color: Color(0xFF37b3e7)), // mediumBlue
+                : const Icon(Icons.search, color: Color(0xFF37b3e7)),
           ),
         ),
         if (_showSuggestions)
           Container(
-            constraints: const BoxConstraints(maxHeight: 200),
+            constraints: const BoxConstraints(maxHeight: 250),
             margin: const EdgeInsets.only(top: 8),
             decoration: BoxDecoration(
-                color: const Color(0xFFf7f7f7), // whiteColor
+                color: const Color(0xFFf7f7f7),
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: const [
                   BoxShadow(
@@ -220,22 +158,56 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
                       offset: Offset(0, 0))
                 ]),
             child: _searchSuggestions.isEmpty && !_isSearching
-                ? const SizedBox() // Should not happen if _showSuggestions is false when empty
-                : ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: _searchSuggestions.length,
-                    separatorBuilder: (context, index) =>
-                        const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final suggestion = _searchSuggestions[index];
-                      return ListTile(
-                        title: Text(suggestion.title,
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text(suggestion.subtitle),
-                        onTap: () => _selectSearchResult(suggestion),
-                      );
-                    },
+                ? const SizedBox()
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.zero,
+                          itemCount: _searchSuggestions.length,
+                          separatorBuilder: (context, index) =>
+                              const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final suggestion = _searchSuggestions[index];
+                            return ListTile(
+                              leading: const Icon(Icons.location_on_outlined,
+                                  color: Colors.grey),
+                              title: Text(
+                                suggestion.title,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: suggestion.subtitle.isNotEmpty
+                                  ? Text(suggestion.subtitle)
+                                  : null,
+                              onTap: () => _selectSearchResult(suggestion),
+                              visualDensity: VisualDensity.compact,
+                            );
+                          },
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            const Text("powered by ",
+                                style: TextStyle(
+                                    fontSize: 10, color: Colors.grey)),
+                            // Using text here as I don't have the google logo asset handy,
+                            // but usually there's a specific asset for this.
+                            const Text("Google",
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey)),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
           ),
       ],
