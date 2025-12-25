@@ -79,7 +79,7 @@ class _LocationAutocompleteFieldState extends State<LocationAutocompleteField> {
   }
 
   Future<void> _selectSearchResult(SearchResult result) async {
-    widget.controller.text = result.title;
+    widget.controller.text = result.title + "," + result.subtitle;
 
     // Hide suggestions immediately
     setState(() {
