@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:new_packers_application/lib/constant/app_drawer.dart';
 import 'package:new_packers_application/lib/constant/app_strings.dart';
+import 'package:new_packers_application/lib/models/app_policy_model.dart';
 import 'package:new_packers_application/views/VendorRegScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -44,6 +45,7 @@ class _HomeServiceViewState extends State<HomeServiceView> {
   }
 
   fetchAllData() async {
+    await fetchPolicy();
     await fetchData();
     await _fetchCategories();
     await _fetchBanners();
@@ -52,6 +54,44 @@ class _HomeServiceViewState extends State<HomeServiceView> {
   CustomerModel? customerModel;
 
   bool isLoading = true;
+  PolicyModel? privacyModel;
+  fetchPolicy() async {
+    if (privacyModel == null) {
+      setState(() {
+        isLoading = true;
+      });
+      try {
+        final String baseUrl = "http://54kidsstreet.org"; // your domain
+
+        final response = await http.get(
+          Uri.parse('$baseUrl/api/policies'),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        );
+
+        log('➡️ API Response: ${response.body}');
+        if (response.statusCode == 200) {
+          final jsonData = jsonDecode(response.body);
+          // Assuming PolicyModel.fromJson now correctly handles the PolicyData structure
+          // where contactUs is ContactData and other policies are PolicyItem/AboutUsModel
+          privacyModel = PolicyModel.fromJson(jsonData);
+        } else {
+          log('⚠️ Failed to fetch: ${response.statusCode}');
+
+          privacyModel = null;
+        }
+      } catch (e) {
+        log('❌ Error fetching policies: $e');
+
+        privacyModel = null;
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
 
   Future<void> fetchData() async {
     try {
@@ -237,7 +277,9 @@ class _HomeServiceViewState extends State<HomeServiceView> {
   }
 
   void _openWhatsApp() async {
-    final String phoneNumber = '919022062666';
+    final String phoneNumber =
+        privacyModel?.data.homePage.chatNumber ?? '919022062666';
+    log("chatNumber====================${privacyModel?.data.homePage.chatNumber}");
     final String message = 'Hello from HomeServiceView';
 
     final Uri whatsappAppUri = Uri.parse(
@@ -262,7 +304,11 @@ class _HomeServiceViewState extends State<HomeServiceView> {
   }
 
   void _makePhoneCall() async {
-    final Uri phoneUri = Uri(scheme: 'tel', path: '8888888888');
+    final Uri phoneUri = Uri(
+      scheme: 'tel',
+      path: privacyModel?.data.homePage.callNumber ?? '8888888888',
+    );
+    log("callNumber====================${privacyModel?.data.homePage.callNumber}");
     if (await canLaunchUrl(phoneUri)) {
       await launchUrl(phoneUri);
     } else {
@@ -385,17 +431,22 @@ class _HomeServiceViewState extends State<HomeServiceView> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      drawer: const AppDrawer(),
+      drawer: AppDrawer(
+        privacyModel: privacyModel,
+      ),
       //
       backgroundColor: darkBlue,
       appBar: AppBar(
-        title: const Text(
-          'Mumbai Metro Packers and Movers',
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontWeight: FontWeight.bold,
-            color: whiteColor,
-            fontSize: 18,
+        title: const FittedBox(
+          fit: BoxFit.fitWidth,
+          child: Text(
+            'Mumbai Metro Packers and Movers',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.bold,
+              color: whiteColor,
+              fontSize: 18,
+            ),
           ),
         ),
         backgroundColor: darkBlue,
@@ -501,7 +552,7 @@ class _HomeServiceViewState extends State<HomeServiceView> {
                                   padding: const EdgeInsets.all(16.0),
                                   crossAxisSpacing: 10,
                                   mainAxisSpacing: 10,
-                            childAspectRatio: 2.0,
+                                  childAspectRatio: 1.5,
                                   children: [
                                     ...categories.map(
                                         (cat) => _buildCategoryButton(cat)),

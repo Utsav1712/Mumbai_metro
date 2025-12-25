@@ -1050,7 +1050,7 @@ class _ServiceFormScreenWithCoordinateState
                       TextFormField(
                         controller: _notesController,
                         decoration: InputDecoration(
-                          labelText: 'Notes/Instructions',
+                          labelText: 'Notes/Special Instructions',
                           labelStyle: const TextStyle(color: darkBlue),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -1335,38 +1335,39 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                   key: _formKey,
                   child: ListView(
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Service Name',
-                            style: TextStyle(
-                              color: darkBlue,
-                              fontSize: 16,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 16),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey[400]!),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              widget.subCategoryName,
-                              style: const TextStyle(
-                                color: darkBlue,
-                                fontSize: 16,
-                                fontFamily: 'Poppins',
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      // Column(
+                      //   crossAxisAlignment: CrossAxisAlignment.start,
+                      //   children: [
+                      //     const SizedBox(height: 16),
+                      //     const Text(
+                      //       'Service Name',
+                      //       style: TextStyle(
+                      //         color: darkBlue,
+                      //         fontSize: 16,
+                      //         fontFamily: 'Poppins',
+                      //       ),
+                      //     ),
+                      //     const SizedBox(height: 8),
+                      //     Container(
+                      //       width: double.infinity,
+                      //       padding: const EdgeInsets.symmetric(
+                      //           vertical: 12, horizontal: 16),
+                      //       decoration: BoxDecoration(
+                      //         border: Border.all(color: Colors.grey[400]!),
+                      //         borderRadius: BorderRadius.circular(10),
+                      //       ),
+                      //       child: Text(
+                      //         widget.subCategoryName,
+                      //         style: const TextStyle(
+                      //           color: darkBlue,
+                      //           fontSize: 16,
+                      //           fontFamily: 'Poppins',
+                      //         ),
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
+
                       if (showBannerSection)
                         Container(
                           padding: const EdgeInsets.all(0.0),
@@ -1376,7 +1377,6 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                               const SizedBox(height: 8),
                               if (hasBanner)
                                 Container(
-                                  height: 150,
                                   width: double.infinity,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(8),
@@ -1396,11 +1396,11 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                                         debugPrint(
                                             "Image loading error: $error");
                                         return Container(
-                                          color: lightBlue,
-                                          child: const Center(
-                                            child: Text(
-                                              'Image not available',
-                                              style: TextStyle(color: darkBlue),
+                                          height: 150,
+                                          color: whiteColor,
+                                          child: Center(
+                                            child: Image.asset(
+                                              'assets/applogo.jpeg',
                                             ),
                                           ),
                                         );
@@ -1408,8 +1408,47 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                                     ),
                                   ),
                                 ),
-                              if (hasBanner && hasDescription)
-                                const SizedBox(height: 8),
+                              if (hasBanner && hasDescription) ...[
+                                const SizedBox(height: 16),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 16, horizontal: 20),
+                                  decoration: BoxDecoration(
+                                    color: whiteColor,
+                                    borderRadius: BorderRadius.circular(15),
+                                    border: Border.all(
+                                      color: mediumBlue.withOpacity(0.3),
+                                      width: 1.5,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: darkBlue.withOpacity(0.08),
+                                        blurRadius: 15,
+                                        offset: const Offset(0, 5),
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          widget.subCategoryName,
+                                          style: const TextStyle(
+                                            color: darkBlue,
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w700,
+                                            fontFamily: 'Poppins',
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
                               if (hasDescription)
                                 Text(
                                   widget.subCategoryDesc!,
@@ -1500,7 +1539,7 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                       TextFormField(
                         controller: _serviceDescriptionController,
                         decoration: InputDecoration(
-                          labelText: 'Notes/Instructions',
+                          labelText: 'Notes/Special Instructions',
                           labelStyle: const TextStyle(color: darkBlue),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),

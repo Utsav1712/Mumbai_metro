@@ -16,9 +16,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../views/ACServicesScreen.dart' as AppColors;
 import '../models/app_policy_model.dart';
 
-
 class AppDrawer extends StatefulWidget {
-  const AppDrawer({super.key});
+  final PolicyModel? privacyModel;
+  AppDrawer({super.key, this.privacyModel});
 
   @override
   State<AppDrawer> createState() => _AppDrawerState();
@@ -28,51 +28,53 @@ class _AppDrawerState extends State<AppDrawer> {
   @override
   void initState() {
     // TODO: implement initState
-    fetchPolicy();
+    // fetchPolicy();
+    getPolicy();
     super.initState();
   }
 
   bool isLoading = false;
-
   PolicyModel? privacyModel;
-
-  fetchPolicy() async {
-    if (privacyModel == null) {
-      setState(() {
-        isLoading = true;
-      });
-      try {
-        final String baseUrl = "http://54kidsstreet.org"; // your domain
-
-        final response = await http.get(
-          Uri.parse('$baseUrl/api/policies'),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        );
-
-        log('➡️ API Response: ${response.body}');
-        if (response.statusCode == 200) {
-          final jsonData = jsonDecode(response.body);
-          // Assuming PolicyModel.fromJson now correctly handles the PolicyData structure
-          // where contactUs is ContactData and other policies are PolicyItem/AboutUsModel
-          privacyModel = PolicyModel.fromJson(jsonData);
-        } else {
-          log('⚠️ Failed to fetch: ${response.statusCode}');
-
-          privacyModel = null;
-        }
-      } catch (e) {
-        log('❌ Error fetching policies: $e');
-
-        privacyModel = null;
-      } finally {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    }
+  getPolicy() {
+    privacyModel = widget.privacyModel;
   }
+  // fetchPolicy() async {
+  //   if (privacyModel == null) {
+  //     setState(() {
+  //       isLoading = true;
+  //     });
+  //     try {
+  //       final String baseUrl = "http://54kidsstreet.org"; // your domain
+
+  //       final response = await http.get(
+  //         Uri.parse('$baseUrl/api/policies'),
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //       );
+
+  //       log('➡️ API Response: ${response.body}');
+  //       if (response.statusCode == 200) {
+  //         final jsonData = jsonDecode(response.body);
+  //         // Assuming PolicyModel.fromJson now correctly handles the PolicyData structure
+  //         // where contactUs is ContactData and other policies are PolicyItem/AboutUsModel
+  //         privacyModel = PolicyModel.fromJson(jsonData);
+  //       } else {
+  //         log('⚠️ Failed to fetch: ${response.statusCode}');
+
+  //         privacyModel = null;
+  //       }
+  //     } catch (e) {
+  //       log('❌ Error fetching policies: $e');
+
+  //       privacyModel = null;
+  //     } finally {
+  //       setState(() {
+  //         isLoading = false;
+  //       });
+  //     }
+  //   }
+  // }
 
   _buildButton({
     required String name,
@@ -186,13 +188,12 @@ class _AppDrawerState extends State<AppDrawer> {
                   name: 'My Profile',
                   onTap: () async {
                     final prefs = await SharedPreferences.getInstance();
-                    final String? customerId =
-                    prefs.getString('customerId');
+                    final String? customerId = prefs.getString('customerId');
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => MyProfileScreen(
-                              customerId: customerId ?? ''),
+                          builder: (context) =>
+                              MyProfileScreen(customerId: customerId ?? ''),
                         ));
                   },
                 ),

@@ -114,6 +114,7 @@ class PolicyData {
   final PolicyItem refundPolicy;
   final ContactUsModel contactUs; // Changed from PolicyItem to ContactUsModel
   final PolicyItem aboutUs; // Changed from PolicyItem to AboutUsModel
+  final HomePageModel homePage;
 
   PolicyData({
     required this.privacyPolicy,
@@ -121,6 +122,7 @@ class PolicyData {
     required this.refundPolicy,
     required this.contactUs,
     required this.aboutUs,
+    required this.homePage,
   });
 
   factory PolicyData.fromJson(Map<String, dynamic> json) {
@@ -131,6 +133,25 @@ class PolicyData {
       // Map to the new specialized models
       contactUs: ContactUsModel.fromJson(json['contact_us'] ?? {}),
       aboutUs: PolicyItem.fromJson(json['about_us'] ?? {}),
+      homePage: HomePageModel.fromJson(json['home-page'] ?? {}),
+    );
+  }
+}
+
+// --- 6. HomePageModel (New) ---
+class HomePageModel {
+  final String chatNumber;
+  final String callNumber;
+
+  HomePageModel({
+    required this.chatNumber,
+    required this.callNumber,
+  });
+
+  factory HomePageModel.fromJson(Map<String, dynamic> json) {
+    return HomePageModel(
+      chatNumber: json['chat_number'] ?? '',
+      callNumber: json['call_number'] ?? '',
     );
   }
 }

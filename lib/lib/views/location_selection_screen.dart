@@ -446,17 +446,6 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                   //   },
                   //   controlAffinity: ListTileControlAffinity.trailing,
                   // ),
-                  CheckboxListTile(
-                    title: const Text('Lift Available'),
-                    value: _serviceLiftSource,
-                    onChanged: (value) {
-                      setState(() {
-                        _serviceLiftSource = value!;
-                        widget.shiftData.serviceLiftSource = value;
-                      });
-                    },
-                    controlAffinity: ListTileControlAffinity.trailing,
-                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -496,6 +485,17 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                       ),
                     ],
                   ),
+                  CheckboxListTile(
+                    title: const Text('Lift Available'),
+                    value: _serviceLiftSource,
+                    onChanged: (value) {
+                      setState(() {
+                        _serviceLiftSource = value!;
+                        widget.shiftData.serviceLiftSource = value;
+                      });
+                    },
+                    controlAffinity: ListTileControlAffinity.trailing,
+                  ),
                   const SizedBox(height: 24),
                   const Divider(),
                   const SizedBox(height: 16),
@@ -529,17 +529,6 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                   //   },
                   //   controlAffinity: ListTileControlAffinity.trailing,
                   // ),
-                  CheckboxListTile(
-                    title: const Text('Lift Available'),
-                    value: _serviceLiftDestination,
-                    onChanged: (value) {
-                      setState(() {
-                        _serviceLiftDestination = value!;
-                        widget.shiftData.serviceLiftDestination = value;
-                      });
-                    },
-                    controlAffinity: ListTileControlAffinity.trailing,
-                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -579,6 +568,17 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                         ],
                       ),
                     ],
+                  ),
+                  CheckboxListTile(
+                    title: const Text('Lift Available'),
+                    value: _serviceLiftDestination,
+                    onChanged: (value) {
+                      setState(() {
+                        _serviceLiftDestination = value!;
+                        widget.shiftData.serviceLiftDestination = value;
+                      });
+                    },
+                    controlAffinity: ListTileControlAffinity.trailing,
                   ),
                   const SizedBox(height: 20),
                 ],

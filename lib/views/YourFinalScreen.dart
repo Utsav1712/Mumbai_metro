@@ -162,14 +162,17 @@ class _YourFinalScreenState extends State<YourFinalScreen> {
 
     try {
       EnquiryResponse? response;
-
+      debugPrint('Submitted enquiry ID: $_submittedEnquiryId');
       if (_submittedEnquiryId == null) {
+        debugPrint('Creating new enquiry');
         // Create new enquiry
         response = await _submitEnquiry();
         if (response != null && response.status && response.data != null) {
+          debugPrint('Enquiry created successfully');
           _submittedEnquiryId = response.data!.id; // Store ID for updates
         }
       } else {
+        debugPrint('Updating existing enquiry');
         // Update existing enquiry
         response = await _updateEnquiry(_submittedEnquiryId!);
       }
