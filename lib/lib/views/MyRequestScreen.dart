@@ -293,6 +293,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 style: const TextStyle(
                                     fontSize: 14,
                                     color: darkBlue,
+                                    fontWeight: FontWeight.bold,
                                     fontFamily: 'Poppins'),
                               ),
                               Expanded(
@@ -316,6 +317,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 style: const TextStyle(
                                     fontSize: 14,
                                     color: darkBlue,
+                                    fontWeight: FontWeight.bold,
                                     fontFamily: 'Poppins'),
                               ),
                               Text(
@@ -337,6 +339,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 style: const TextStyle(
                                     fontSize: 14,
                                     color: darkBlue,
+                                    fontWeight: FontWeight.bold,
                                     fontFamily: 'Poppins'),
                               ),
                               Text(
@@ -358,6 +361,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 style: const TextStyle(
                                     fontSize: 14,
                                     color: darkBlue,
+                                    fontWeight: FontWeight.bold,
                                     fontFamily: 'Poppins'),
                               ),
                               Expanded(
@@ -382,6 +386,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 style: const TextStyle(
                                     fontSize: 14,
                                     color: darkBlue,
+                                    fontWeight: FontWeight.bold,
                                     fontFamily: 'Poppins'),
                               ),
                               Text(
@@ -403,6 +408,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 style: const TextStyle(
                                     fontSize: 14,
                                     color: darkBlue,
+                                    fontWeight: FontWeight.bold,
                                     fontFamily: 'Poppins'),
                               ),
                               Text(
@@ -424,6 +430,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 style: const TextStyle(
                                     fontSize: 14,
                                     color: darkBlue,
+                                    fontWeight: FontWeight.bold,
                                     fontFamily: 'Poppins'),
                               ),
                               Text(
@@ -447,6 +454,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 style: const TextStyle(
                                     fontSize: 14,
                                     color: darkBlue,
+                                    fontWeight: FontWeight.bold,
                                     fontFamily: 'Poppins'),
                               ),
                               Text(
@@ -470,6 +478,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 style: const TextStyle(
                                     fontSize: 14,
                                     color: darkBlue,
+                                    fontWeight: FontWeight.bold,
                                     fontFamily: 'Poppins'),
                               ),
                               Text(
@@ -492,6 +501,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 style: const TextStyle(
                                     fontSize: 14,
                                     color: darkBlue,
+                                    fontWeight: FontWeight.bold,
                                     fontFamily: 'Poppins'),
                               ),
                               Text(
@@ -513,6 +523,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 style: const TextStyle(
                                     fontSize: 14,
                                     color: darkBlue,
+                                    fontWeight: FontWeight.bold,
                                     fontFamily: 'Poppins'),
                               ),
                               Text(

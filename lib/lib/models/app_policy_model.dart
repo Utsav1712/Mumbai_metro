@@ -58,6 +58,7 @@ class ContactUsModel {
   final String youtubeIcon;
   final String mapLocationLink;
   final String shareAppLink;
+  final String websiteLink;
 
   ContactUsModel({
     required this.title,
@@ -79,6 +80,7 @@ class ContactUsModel {
     required this.youtubeIcon,
     required this.mapLocationLink,
     required this.shareAppLink,
+    required this.websiteLink,
   });
 
   factory ContactUsModel.fromJson(Map<String, dynamic> json) {
@@ -102,6 +104,7 @@ class ContactUsModel {
       youtubeIcon: json['youtube_icon'] ?? '',
       mapLocationLink: json['map_location_link'] ?? '',
       shareAppLink: json['share_app_link'] ?? '',
+      websiteLink: json['website_link'] ?? '',
     );
   }
 }
