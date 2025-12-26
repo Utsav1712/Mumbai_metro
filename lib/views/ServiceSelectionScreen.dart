@@ -194,7 +194,7 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen> {
   Future<EnquiryResponse?> _submitEnquiry(
       {required List<SelectedProduct> selectedItems}) async {
     try {
-      const String apiUrl = 'https://54kidsstreet.org/api/enquiry/latest';
+      const String apiUrl = 'https://54kidsstreet.org/api/enquiry';
 
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
       _populateRequestFields(request, selectedItems);

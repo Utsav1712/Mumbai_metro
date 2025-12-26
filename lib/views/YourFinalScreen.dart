@@ -62,7 +62,7 @@ class _YourFinalScreenState extends State<YourFinalScreen> {
 
   Future<EnquiryResponse?> _submitEnquiry() async {
     try {
-      const String apiUrl = 'https://54kidsstreet.org/api/enquiry/latest';
+      const String apiUrl = 'https://54kidsstreet.org/api/enquiry';
 
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
       _populateRequestFields(request);
