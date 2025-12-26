@@ -92,8 +92,13 @@ class _SubCategorySelectionScreenState
   void initState() {
     super.initState();
     _fetchProductSubcategories(); // Fetch subcategories first
-    selectedProducts.addAll(widget.initialSelectedProducts.map(
-        (p) => SelectedProduct(productName: p.productName, count: p.count)));
+    selectedProducts.addAll(widget.initialSelectedProducts.map((p) =>
+        SelectedProduct(
+            productName: p.productName,
+            count: p.count,
+            productId: p.productId,
+            serviceId: p.serviceId,
+            productSubCatId: p.productSubCatId)));
   }
 
   // Fetches product subcategories based on the service ID.

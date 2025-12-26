@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:developer';
 import '../../models/PaymentModel.dart';
-import '../models/customer_data_model.dart';
-import '../constant/app_formatter.dart';
 
 const Color darkBlue = Color(0xFF03669d);
 const Color mediumBlue = Color(0xFF37b3e7);
@@ -24,62 +21,11 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
   List<PaymentModel> payments = [];
   bool isLoading = true;
   String? errorMessage;
-  CustomerModel? customerModel;
 
   @override
   void initState() {
     super.initState();
-    _fetchAllData();
-  }
-
-  Future<void> _fetchAllData() async {
-    setState(() {
-      isLoading = true;
-      errorMessage = null;
-    });
-    try {
-      await Future.wait([
-        _fetchPayments(),
-        _fetchCustomerData(),
-      ]);
-    } catch (e) {
-      setState(() {
-        errorMessage = 'An error occurred: $e';
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _fetchCustomerData() async {
-    try {
-      final String apiUrl =
-          "http://54kidsstreet.org/api/customer/${widget.customerId}";
-      final response = await http.get(
-        Uri.parse(apiUrl),
-        headers: {"Content-Type": "application/json"},
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        debugPrint("url: $apiUrl");
-        debugPrint("Customer Data: $data");
-        // Assuming the structure matches MyProfileScreen logic
-        if (data['status'] == true || data['data'] != null) {
-          setState(() {
-            customerModel = CustomerModel.fromJson(data);
-          });
-        }
-      } else {
-        log("Failed to load customer data: ${response.statusCode}");
-      }
-    } catch (e) {
-      log("Error fetching customer data: $e");
-    }
+    _fetchPayments();
   }
 
   Future<void> _fetchPayments() async {
@@ -117,14 +63,10 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
     }
   }
 
-  String _calculate10Percent(String? amount) {
-    if (amount == null || amount.isEmpty) return "0.00";
-    try {
-      double value = double.parse(amount);
-      return (value * 0.10).toStringAsFixed(2);
-    } catch (e) {
-      return "0.00";
-    }
+  Color _getStatusColor(String? status) {
+    if (status?.toLowerCase() == 'success') return Colors.green;
+    if (status?.toLowerCase() == 'pending') return Colors.orange;
+    return Colors.red;
   }
 
   @override
@@ -161,181 +103,116 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
                       itemCount: payments.length,
                       itemBuilder: (context, index) {
                         final payment = payments[index];
-                        return Container(
+                        return Card(
                           margin: const EdgeInsets.only(bottom: 16),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                spreadRadius: 1,
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Customer ID
-                              Row(
-                                children: [
-                                  const Text(
-                                    "Customer ID: ",
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        color: darkBlue,
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "Order #${payment.orderNo ?? 'N/A'}",
+                                      style: const TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontFamily: 'Poppins'),
-                                  ),
+                                        fontSize: 16,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: _getStatusColor(
+                                                payment.paymentStatus)
+                                            .withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                            color: _getStatusColor(
+                                                payment.paymentStatus)),
+                                      ),
+                                      child: Text(
+                                        payment.paymentStatus?.toUpperCase() ??
+                                            'UNKNOWN',
+                                        style: TextStyle(
+                                          color: _getStatusColor(
+                                              payment.paymentStatus),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          "Amount",
+                                          style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 12,
+                                              fontFamily: 'Poppins'),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "₹${payment.totalAmount ?? '0.00'}",
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
+                                            color: darkBlue,
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        const Text(
+                                          "Date",
+                                          style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 12,
+                                              fontFamily: 'Poppins'),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          payment.paymentDate ?? 'N/A',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                if (payment.transactionId != null) ...[
+                                  const Divider(height: 24),
                                   Text(
-                                    "${customerModel?.data.id ?? 'N/A'}",
-                                    style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.black,
-                                        fontFamily: 'Poppins'),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 3),
-                              // Name
-                              Row(
-                                children: [
-                                  const Text(
-                                    "Name : ",
+                                    "Transaction ID: ${payment.transactionId}",
                                     style: TextStyle(
-                                        fontSize: 14,
-                                        color: darkBlue,
-                                        fontWeight: FontWeight.bold,
+                                        color: Colors.grey[600],
+                                        fontSize: 13,
                                         fontFamily: 'Poppins'),
                                   ),
-                                  Expanded(
-                                    child: Text(
-                                      customerModel?.data.customerName ?? 'N/A',
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.black,
-                                          fontFamily: 'Poppins'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 3),
-                              // Mobile
-                              Row(
-                                children: [
-                                  const Text(
-                                    "Mobile : ",
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        color: darkBlue,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'Poppins'),
-                                  ),
-                                  Text(
-                                    customerModel?.data.mobileNo ?? 'N/A',
-                                    style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.black,
-                                        fontFamily: 'Poppins'),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 3),
-                              // Email
-                              Row(
-                                children: [
-                                  const Text(
-                                    "E-MAIL: ",
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        color: darkBlue,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'Poppins'),
-                                  ),
-                                  Expanded(
-                                    child: Text(
-                                      customerModel?.data.email ?? 'N/A',
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.black,
-                                          fontFamily: 'Poppins'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 3),
-                              // 10% Paid Amount
-                              Row(
-                                children: [
-                                  const Text(
-                                    "10% Paid Amount: ",
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        color: darkBlue,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'Poppins'),
-                                  ),
-                                  Text(
-                                    "₹${_calculate10Percent(payment.totalAmount)}",
-                                    style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.black,
-                                        fontFamily: 'Poppins'),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 3),
-                              // Payment (Transaction) Id
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    "Payment (Transaction) Id: ",
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        color: darkBlue,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'Poppins'),
-                                  ),
-                                  Expanded(
-                                    child: Text(
-                                      payment.transactionId ?? 'N/A',
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.black,
-                                          fontFamily: 'Poppins'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 3),
-                              // Time
-                              Row(
-                                children: [
-                                  const Text(
-                                    "Time: ",
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        color: darkBlue,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'Poppins'),
-                                  ),
-                                  Expanded(
-                                    child: Text(
-                                      AppFormatter.convertCreateDate(
-                                          input: payment.paymentDate ?? 'N/A'),
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.black,
-                                          fontFamily: 'Poppins'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                                ]
+                              ],
+                            ),
                           ),
                         );
                       },
