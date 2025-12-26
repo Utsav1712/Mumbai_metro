@@ -339,6 +339,8 @@ class ThankYouScreen extends StatelessWidget {
                         'User ID:', serviceResponse.data?.customerId ?? 'N/A'),
                     _buildDetailRow('Order Number:',
                         '#${serviceResponse.data?.orderNo ?? 'N/A'}'),
+                    _buildDetailRow('Service Name:',
+                        serviceResponse.data?.serviceName ?? 'N/A'),
                     serviceResponse.data?.flatNo == '0'
                         ? SizedBox()
                         : _buildDetailRow('Flat Number:',

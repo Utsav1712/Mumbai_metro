@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../lib/models/customer_data_model.dart';
 import '../lib/views/MyRequestScreen.dart';
 import '../lib/views/login_view.dart';
+import '../lib/views/payment_details_screen.dart';
 import '../models/UserData.dart';
 import 'SubCategoryScreen.dart';
 
@@ -320,6 +321,14 @@ class _HomeServiceViewState extends State<HomeServiceView> {
     );
   }
 
+  Future<void> _navigateToPaymentDetails() async {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PaymentDetailsScreen(),
+        ));
+  }
+
   void _openWhatsApp() async {
     final String phoneNumber =
         privacyModel?.data.homePage.chatNumber ?? '919022062666';
@@ -609,6 +618,11 @@ class _HomeServiceViewState extends State<HomeServiceView> {
                                       'Vendor Registration',
                                       Icons.person,
                                       onTap: _navigateToVendorReg,
+                                    ),
+                                    _buildButton(
+                                      'Payment Details',
+                                      Icons.payment,
+                                      onTap: _navigateToPaymentDetails,
                                     ),
                                   ],
                                 ),
