@@ -2,7 +2,7 @@ class PaymentModel {
   final int? id;
   final String? transactionId;
   final String? orderNo;
-  final String? totalAmount; // API sends string "3700.00"
+  final String? totalAmount;
   final String? paymentStatus;
   final String? paymentMethod;
   final String? paymentDate;

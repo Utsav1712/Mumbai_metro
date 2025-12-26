@@ -238,7 +238,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.black87,
+                                  color: Colors.black,
                                 ),
                               ),
                               paymentDetails.isNotEmpty &&
@@ -301,7 +301,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                   "${enquiry["pickup_location"] ?? ""}",
                                   style: const TextStyle(
                                       fontSize: 14,
-                                      color: Colors.black54,
+                                      color: Colors.black,
                                       fontFamily: 'Poppins'),
                                 ),
                               ),
@@ -324,7 +324,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 "${enquiry["floor_number"] ?? "-"}",
                                 style: const TextStyle(
                                     fontSize: 14,
-                                    color: Colors.black54,
+                                    color: Colors.black,
                                     fontFamily: 'Poppins'),
                               ),
                             ],
@@ -346,7 +346,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 "${(enquiry["pickup_services_lift"] ?? "0") == '0' ? 'Not Available' : 'Available'}",
                                 style: const TextStyle(
                                     fontSize: 14,
-                                    color: Colors.black54,
+                                    color: Colors.black,
                                     fontFamily: 'Poppins'),
                               ),
                             ],
@@ -370,7 +370,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                   maxLines: 2,
                                   style: const TextStyle(
                                       fontSize: 14,
-                                      color: Colors.black54,
+                                      color: Colors.black,
                                       fontFamily: 'Poppins'),
                                 ),
                               ),
@@ -393,7 +393,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 "${enquiry["destination_floor_number"] ?? "N/A"}",
                                 style: const TextStyle(
                                     fontSize: 14,
-                                    color: Colors.black54,
+                                    color: Colors.black,
                                     fontFamily: 'Poppins'),
                               ),
                             ],
@@ -415,7 +415,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 "${(enquiry["drop_services_lift"] ?? "0") == '0' ? 'Not Available' : 'Available'}",
                                 style: const TextStyle(
                                     fontSize: 14,
-                                    color: Colors.black54,
+                                    color: Colors.black,
                                     fontFamily: 'Poppins'),
                               ),
                             ],
@@ -439,7 +439,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                         enquiry["shipping_date_time"] ?? "N/A"),
                                 style: const TextStyle(
                                     fontSize: 14,
-                                    color: Colors.black54,
+                                    color: Colors.black,
                                     fontFamily: 'Poppins'),
                               ),
                             ],
@@ -463,7 +463,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                         enquiry["shipping_date_time"] ?? "N/A"),
                                 style: const TextStyle(
                                     fontSize: 14,
-                                    color: Colors.black54,
+                                    color: Colors.black,
                                     fontFamily: 'Poppins'),
                               ),
                             ],
@@ -486,7 +486,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                     input: enquiry["created_at"] ?? "N/A"),
                                 style: const TextStyle(
                                     fontSize: 14,
-                                    color: Colors.black54,
+                                    color: Colors.black,
                                     fontFamily: 'Poppins'),
                               ),
                             ],
@@ -508,7 +508,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 "${enquiry["total_cft"]}",
                                 style: const TextStyle(
                                     fontSize: 14,
-                                    color: Colors.black54,
+                                    color: Colors.black,
                                     fontFamily: 'Poppins'),
                               ),
                             ],
@@ -530,7 +530,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 "${enquiry["km_distance"]} KM",
                                 style: const TextStyle(
                                     fontSize: 14,
-                                    color: Colors.black54,
+                                    color: Colors.black,
                                     fontFamily: 'Poppins'),
                               ),
                             ],
@@ -552,7 +552,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                 " \u20B9${enquiry["total_amount"]}",
                                 style: const TextStyle(
                                     fontSize: 14,
-                                    color: Colors.black54,
+                                    color: Colors.black,
                                     fontWeight: FontWeight.bold,
                                     fontFamily: 'Poppins'),
                               ),
@@ -579,7 +579,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                     "\u20B9${(paymentDetails.last['amount'] ?? 0).toString()}(Paid)",
                                     style: const TextStyle(
                                         fontSize: 14,
-                                        color: Colors.black54,
+                                        color: Colors.black,
                                         fontWeight: FontWeight.bold,
                                         fontFamily: 'Poppins'),
                                   ),
@@ -604,7 +604,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                     "${AppFormatter.convertCreateDate(input: paymentDetails[0]['created_at'])}",
                                     style: const TextStyle(
                                         fontSize: 14,
-                                        color: Colors.black54,
+                                        color: Colors.black,
                                         fontWeight: FontWeight.bold,
                                         fontFamily: 'Poppins'),
                                   ),
@@ -702,7 +702,7 @@ class _MyRequestScreenState extends State<MyRequestScreen> {
                                         ),
                                       ),
                                       child: Text(
-                                        'Book Now \u20B9${calculatePercentage(double.parse((enquiry["total_amount"] ?? 0).toString()))}',
+                                        'Book Now \u20B9.${calculatePercentage(double.parse((enquiry["total_amount"] ?? 0).toString()))}',
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,

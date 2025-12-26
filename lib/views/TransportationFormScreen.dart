@@ -309,45 +309,11 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 8),
-                                  const Text(
-                                    'Service',
-                                    style: TextStyle(
-                                      color: darkBlue,
-                                      fontSize: 16,
-                                      fontFamily: 'Poppins',
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12, horizontal: 16),
-                                    decoration: BoxDecoration(
-                                      border:
-                                          Border.all(color: Colors.grey[400]!),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Text(
-                                      widget.subCategoryName,
-                                      style: const TextStyle(
-                                        color: darkBlue,
-                                        fontSize: 16,
-                                        fontFamily: 'Poppins',
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
                               const SizedBox(height: 16),
                               // Banner Image - Only if exists
                               if (hasBanner)
                                 Container(
-                                  height: 150,
+                                  height: 180,
                                   width: double.infinity,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(8),
@@ -384,6 +350,45 @@ class _TransportationFormScreenState extends State<TransportationFormScreen> {
                                   maxLines: 10,
                                   overflow: TextOverflow.ellipsis,
                                 ),
+
+                              const SizedBox(height: 16),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 16, horizontal: 20),
+                                decoration: BoxDecoration(
+                                  color: whiteColor,
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(
+                                    color: mediumBlue.withOpacity(0.3),
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: darkBlue.withOpacity(0.08),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 5),
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        widget.subCategoryName,
+                                        style: const TextStyle(
+                                          color: darkBlue,
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w700,
+                                          fontFamily: 'Poppins',
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
