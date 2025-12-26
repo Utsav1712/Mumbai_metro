@@ -315,6 +315,9 @@ class _SubCategorySelectionScreenState
                     children: subcategories.map((subcat) {
                       final isSelected =
                           selectedSubcategory?.subcatId == subcat.subcatId;
+                      final hasItems = selectedProducts.any((p) =>
+                          p.productSubCatId == subcat.subcatId && p.count > 0);
+
                       return ChoiceChip(
                         label: Text(subcat.subcatName),
                         selected: isSelected,
@@ -326,17 +329,29 @@ class _SubCategorySelectionScreenState
                             _fetchProducts(subcat.subcatId);
                           }
                         },
-                        backgroundColor:
-                            isSelected ? darkBlue : Colors.grey.shade200,
+                        backgroundColor: isSelected
+                            ? darkBlue
+                            : (hasItems
+                                ? const Color.fromARGB(255, 203, 135, 121)
+                                : Colors.grey.shade200),
                         labelStyle: TextStyle(
-                          color: isSelected ? blackColor : darkBlue,
+                          color: isSelected
+                              ? const Color.fromARGB(255, 30, 23, 23)
+                              : (hasItems
+                                  ? const Color.fromARGB(255, 35, 11, 11)
+                                  : darkBlue),
                           fontFamily: 'Poppins',
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
-                          side: BorderSide(
-                              color:
-                                  isSelected ? darkBlue : Colors.grey.shade400),
+                          side: hasItems
+                              ? const BorderSide(
+                                  color: Color.fromARGB(255, 212, 67, 45),
+                                  width: 2)
+                              : BorderSide(
+                                  color: isSelected
+                                      ? darkBlue
+                                      : Colors.grey.shade400),
                         ),
                       );
                     }).toList(),
