@@ -44,6 +44,12 @@ class _YourFinalScreenState extends State<YourFinalScreen> {
       final product = widget.shiftData.selectedProducts[i];
       productsMap['products_item[$i][product_name]'] = product.productName;
       productsMap['products_item[$i][quantity]'] = product.count.toString();
+      productsMap['products_item[$i][product_id]'] =
+          product.productId?.toString() ?? '0';
+      productsMap['products_item[$i][service_id]'] =
+          product.serviceId?.toString() ?? '0';
+      productsMap['products_item[$i][product_subcat_id]'] =
+          product.productSubCatId?.toString() ?? '0';
     }
 
     return productsMap;
@@ -56,7 +62,7 @@ class _YourFinalScreenState extends State<YourFinalScreen> {
 
   Future<EnquiryResponse?> _submitEnquiry() async {
     try {
-      const String apiUrl = 'https://54kidsstreet.org/api/enquiry';
+      const String apiUrl = 'https://54kidsstreet.org/api/enquiry/latest';
 
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
       _populateRequestFields(request);
@@ -81,10 +87,20 @@ class _YourFinalScreenState extends State<YourFinalScreen> {
 
   Future<EnquiryResponse?> _updateEnquiry(int enquiryId) async {
     try {
-      final String apiUrl =
-          'http://127.0.0.1:8000/api/enquiry-update/$enquiryId';
+      final String apiUrl = 'https://54kidsstreet.org/api/enquiry-update';
 
+      // Use POST with _method = PUT for Laravel multipart support
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
+      request.fields['_method'] = 'PUT';
+      request.fields['id'] = enquiryId.toString();
+
+      if (widget.shiftData.selectedProducts.isNotEmpty &&
+          widget.shiftData.selectedProducts.first.serviceId != null) {
+        request.fields['service_id'] =
+            widget.shiftData.selectedProducts.first.serviceId.toString();
+      } else {
+        request.fields['service_id'] = widget.shiftData.serviceId.toString();
+      }
       _populateRequestFields(request);
 
       final streamedResponse = await request.send();
@@ -168,7 +184,7 @@ class _YourFinalScreenState extends State<YourFinalScreen> {
         // Create new enquiry
         response = await _submitEnquiry();
         if (response != null && response.status && response.data != null) {
-          debugPrint('Enquiry created successfully');
+          debugPrint('Enquiry created successfully ====>${response.data!}');
           _submittedEnquiryId = response.data!.id; // Store ID for updates
         }
       } else {

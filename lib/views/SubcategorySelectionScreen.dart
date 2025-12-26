@@ -192,40 +192,65 @@ class _SubCategorySelectionScreenState
     }
   }
 
-  void incrementProduct(String productName) {
+  void incrementProduct(Product product) {
     setState(() {
       final existingProduct = selectedProducts.firstWhere(
-        (p) => p.productName == productName,
-        orElse: () => SelectedProduct(productName: productName, count: 0),
+        (p) => p.productId == product.productId,
+        orElse: () => SelectedProduct(
+          productName: product.productName,
+          count: 0,
+          productId: product.productId,
+          serviceId: product.serviceId,
+          productSubCatId: selectedSubcategory!.subcatId,
+        ),
       );
       if (selectedProducts.contains(existingProduct)) {
         existingProduct.count++;
       } else {
-        selectedProducts
-            .add(SelectedProduct(productName: productName, count: 1));
+        selectedProducts.add(
+          SelectedProduct(
+            productName: product.productName,
+            count: 1,
+            productId: product.productId,
+            serviceId: product.serviceId,
+            productSubCatId: selectedSubcategory!.subcatId,
+          ),
+        );
       }
     });
   }
 
-  void decrementProduct(String productName) {
+  void decrementProduct(Product product) {
     setState(() {
       final existingProduct = selectedProducts.firstWhere(
-        (p) => p.productName == productName,
-        orElse: () => SelectedProduct(productName: productName, count: 0),
+        (p) => p.productId == product.productId,
+        orElse: () => SelectedProduct(
+          productName: product.productName,
+          count: 0,
+          productId: product.productId,
+          serviceId: product.serviceId,
+          productSubCatId: selectedSubcategory!.subcatId,
+        ),
       );
       if (existingProduct.count > 0) {
         existingProduct.count--;
         if (existingProduct.count == 0) {
-          selectedProducts.removeWhere((p) => p.productName == productName);
+          selectedProducts.removeWhere((p) => p.productId == product.productId);
         }
       }
     });
   }
 
-  int getProductCount(String productName) {
+  int getProductCount(Product product) {
     final existingProduct = selectedProducts.firstWhere(
-      (p) => p.productName == productName,
-      orElse: () => SelectedProduct(productName: productName, count: 0),
+      (p) => p.productId == product.productId,
+      orElse: () => SelectedProduct(
+        productName: product.productName,
+        count: 0,
+        productId: product.productId,
+        serviceId: product.serviceId,
+        productSubCatId: selectedSubcategory!.subcatId,
+      ),
     );
     return existingProduct.count;
   }
@@ -342,8 +367,7 @@ class _SubCategorySelectionScreenState
                                 itemCount: products.length,
                                 itemBuilder: (context, index) {
                                   final product = products[index];
-                                  final currentCount =
-                                      getProductCount(product.productName);
+                                  final currentCount = getProductCount(product);
                                   return Container(
                                     margin: const EdgeInsets.only(bottom: 12.0),
                                     padding: const EdgeInsets.symmetric(
@@ -369,8 +393,8 @@ class _SubCategorySelectionScreenState
                                         Row(
                                           children: [
                                             GestureDetector(
-                                              onTap: () => decrementProduct(
-                                                  product.productName),
+                                              onTap: () =>
+                                                  decrementProduct(product),
                                               child: Container(
                                                 width: 40,
                                                 height: 40,
@@ -404,8 +428,8 @@ class _SubCategorySelectionScreenState
                                             ),
                                             const SizedBox(width: 16),
                                             GestureDetector(
-                                              onTap: () => incrementProduct(
-                                                  product.productName),
+                                              onTap: () =>
+                                                  incrementProduct(product),
                                               child: Container(
                                                 width: 40,
                                                 height: 40,

@@ -128,6 +128,12 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen> {
       final product = selectedItems[i];
       productsMap['products_item[$i][product_name]'] = product.productName;
       productsMap['products_item[$i][quantity]'] = product.count.toString();
+      productsMap['products_item[$i][product_id]'] =
+          product.productId?.toString() ?? '0';
+      productsMap['products_item[$i][service_id]'] =
+          product.serviceId?.toString() ?? '0';
+      productsMap['products_item[$i][product_subcat_id]'] =
+          product.productSubCatId?.toString() ?? '0';
     }
 
     return productsMap;
@@ -188,7 +194,7 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen> {
   Future<EnquiryResponse?> _submitEnquiry(
       {required List<SelectedProduct> selectedItems}) async {
     try {
-      const String apiUrl = 'https://54kidsstreet.org/api/enquiry';
+      const String apiUrl = 'https://54kidsstreet.org/api/enquiry/latest';
 
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
       _populateRequestFields(request, selectedItems);
@@ -214,15 +220,25 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen> {
   Future<EnquiryResponse?> _updateEnquiry(
       int enquiryId, List<SelectedProduct> selectedItems) async {
     try {
-      final String apiUrl =
-          'https://54kidsstreet.org/api/enquiry-update/$enquiryId';
-
+      final String apiUrl = 'https://54kidsstreet.org/api/enquiry-update';
+      debugPrint('Update API URL: $apiUrl');
+      debugPrint('Update enquiry ID: $enquiryId');
+      // Use POST with _method = PUT for Laravel multipart support
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
+      request.fields['_method'] = 'PUT';
+      request.fields['id'] = enquiryId.toString();
+
+      if (selectedItems.isNotEmpty && selectedItems.first.serviceId != null) {
+        request.fields['service_id'] = selectedItems.first.serviceId.toString();
+      } else {
+        request.fields['service_id'] = widget.subCategoryId.toString();
+      }
+
       _populateRequestFields(request, selectedItems);
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
-
+      debugPrint('Update Response: ${response.body}');
       if (response.statusCode == 200 || response.statusCode == 201) {
         final jsonData = json.decode(response.body);
         print('Update Res---->>${response.body}');
@@ -263,7 +279,7 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen> {
         // Create new enquiry
         response = await _submitEnquiry(selectedItems: selctedItems);
         if (response != null && response.status && response.data != null) {
-          _submittedEnquiryId = response.data!.orderNo; // Store ID for updates
+          _submittedEnquiryId = response.latestEnquiryId;
         }
         debugPrint('response: ${response}');
         debugPrint('New enquiry created with ID: ${_submittedEnquiryId}');
