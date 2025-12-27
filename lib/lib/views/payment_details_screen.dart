@@ -103,120 +103,66 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
                       itemCount: payments.length,
                       itemBuilder: (context, index) {
                         final payment = payments[index];
+                        final customer = payment.customer;
+
                         return Card(
                           margin: const EdgeInsets.only(bottom: 16),
                           elevation: 2,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
+                          color: Colors.white,
                           child: Padding(
                             padding: const EdgeInsets.all(16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "Order #${payment.orderNo ?? 'N/A'}",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                        fontFamily: 'Poppins',
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: _getStatusColor(
-                                                payment.paymentStatus)
-                                            .withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                            color: _getStatusColor(
-                                                payment.paymentStatus)),
-                                      ),
-                                      child: Text(
-                                        payment.paymentStatus?.toUpperCase() ??
-                                            'UNKNOWN',
-                                        style: TextStyle(
-                                          color: _getStatusColor(
-                                              payment.paymentStatus),
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          "Amount",
-                                          style: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 12,
-                                              fontFamily: 'Poppins'),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          "₹${payment.totalAmount ?? '0.00'}",
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18,
-                                            color: darkBlue,
-                                            fontFamily: 'Poppins',
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: [
-                                        const Text(
-                                          "Date",
-                                          style: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 12,
-                                              fontFamily: 'Poppins'),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          payment.paymentDate ?? 'N/A',
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontFamily: 'Poppins',
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                if (payment.transactionId != null) ...[
-                                  const Divider(height: 24),
-                                  Text(
-                                    "Transaction ID: ${payment.transactionId}",
-                                    style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 13,
-                                        fontFamily: 'Poppins'),
-                                  ),
-                                ]
+                                _buildDetailRow(
+                                    "Customer ID", "${customer?.id ?? 'N/A'}"),
+                                _buildDetailRow("Name",
+                                    "${customer?.customerName ?? 'N/A'}"),
+                                _buildDetailRow(
+                                    "Mobile", "${customer?.mobileNo ?? 'N/A'}"),
+                                _buildDetailRow(
+                                    "E-MAIL", "${customer?.email ?? 'N/A'}"),
+                                _buildDetailRow("10% Paid Amount",
+                                    "₹${payment.totalAmount ?? '0.00'}"),
+                                _buildDetailRow("Payment (Transaction) Id",
+                                    "${payment.transactionId ?? 'N/A'}"),
+                                _buildDetailRow(
+                                    "Time", "${payment.paymentDate ?? 'N/A'}"),
                               ],
                             ),
                           ),
                         );
                       },
                     ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4.0),
+      child: RichText(
+        text: TextSpan(
+          style: const TextStyle(
+            fontSize: 13,
+            fontFamily: 'Poppins',
+            color: darkBlue,
+            height: 1.5,
+          ),
+          children: [
+            TextSpan(
+              text: "$label: ",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            TextSpan(
+              text: value,
+              style: TextStyle(
+                  fontWeight: FontWeight.normal, color: Colors.grey[800]),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

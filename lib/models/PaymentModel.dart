@@ -8,6 +8,8 @@ class PaymentModel {
   final String? paymentDate;
   final String? currency;
 
+  final Customer? customer;
+
   PaymentModel({
     this.id,
     this.transactionId,
@@ -17,6 +19,7 @@ class PaymentModel {
     this.paymentMethod,
     this.paymentDate,
     this.currency,
+    this.customer,
   });
 
   factory PaymentModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +32,31 @@ class PaymentModel {
       paymentMethod: json['payment_method'],
       paymentDate: json['payment_date'],
       currency: json['currency'],
+      customer:
+          json['customer'] != null ? Customer.fromJson(json['customer']) : null,
+    );
+  }
+}
+
+class Customer {
+  final int? id;
+  final String? customerName;
+  final String? mobileNo;
+  final String? email;
+
+  Customer({
+    this.id,
+    this.customerName,
+    this.mobileNo,
+    this.email,
+  });
+
+  factory Customer.fromJson(Map<String, dynamic> json) {
+    return Customer(
+      id: json['id'],
+      customerName: json['customer_name'],
+      mobileNo: json['mobile_no'],
+      email: json['email'],
     );
   }
 }
